@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D.I.R.T.T.</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="Circle_green.png">
+</head>
+<body>
+
+    <header class="title-bar">
+        <img src="DIRTT.png" alt="DIRTT logo" class="title-bar-logo">
+        <p class="title-bar-description">Digital Instrument for Remote Terrain Testing</p>
+        <div class="title-bar-spacer"></div>
+        <p class="title-bar-description">Dirty Dawgs - 2026</p>
+    </header>
+
+    <div class="shell">
+        <nav class="sidebar">
+            <div class="nav-group">
+                <div class="nav-group-label">Site</div>
+                <a class="nav-link is-active" href="#home" data-page="home">
+                    <span class="nav-label">Home</span>
+                </a>
+                <a class="nav-link" href="#about" data-page="about">
+                    <span class="nav-label">About</span>
+                </a>
+            </div>
+            <div class="nav-group">
+                <div class="nav-group-label">Development</div>
+                <a class="nav-link" href="#devlog" data-page="devlog">
+                    <span class="nav-label">Devlog</span>
+                </a>
+                <a class="nav-link" href="#files" data-page="files">
+                    <span class="nav-label">Files</span>
+                </a>
+            </div>
+        </nav>
+
+        <main class="content">
+
+            <section class="page is-active" id="home">
+                <h1 class="page-title">Home</h1>
+                <p class="description">Placeholder Text</p>
+            </section>
+
+            <section class="page" id="about">
+                <h1 class="page-title">About</h1>
+                <p class="description">Placeholder Text</p>
+
+                <h2 class="section-title">Team</h2>
+                <div class="team-grid" id="team-grid"></div>
+            </section>
+
+            <section class="page" id="devlog">
+                <h1 class="page-title">Devlog</h1>
+                <div class="devlog-list" id="devlog-list"></div>
+            </section>
+
+            <section class="page" id="files">
+                <h1 class="page-title">Files</h1>
+                <div class="file-list" id="file-list"></div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="devlog.js"></script>
+    <script src="files.js"></script>
+    <script src="team.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
