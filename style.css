@@ -66,8 +66,8 @@ body {
     width: var(--sidebar-width);
     flex-shrink: 0;
     position: sticky;
-    top: 64px;
-    height: calc(100vh - 64px);
+    top: var(--title-bar-height);
+    height: calc(100vh - var(--title-bar-height));
     overflow-y: auto;
     background: var(--off-white);
     border-right: 1px solid var(--light-grey);
@@ -172,6 +172,7 @@ body {
 
 .file-meta {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 12px;
     font-size: 0.85rem;
@@ -189,6 +190,10 @@ body {
 
 .file-preview {
     height: 500px;
+}
+
+.file-open-link {
+    display: none;
 }
 
 /* Devlog */
@@ -213,6 +218,7 @@ body {
 
 .devlog-meta {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 12px;
     font-size: 0.85rem;
@@ -248,7 +254,7 @@ body {
 
 .devlog-figure {
     margin: 0;
-    max-width: 420px;
+    max-width: min(420px, 100%);
 }
 
 .devlog-image {
@@ -370,4 +376,67 @@ body {
     padding: 0 16px 14px;
     font-size: 0.9rem;
     color: var(--dark-grey);
+}
+/* Mobile */
+@media (max-width: 720px) {
+    :root {
+        --title-bar-height: 56px;
+    }
+
+    .title-bar {
+        gap: 0.5rem;
+    }
+
+    .title-bar-tagline {
+        display: none;
+    }
+
+    .shell {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: auto;
+        height: auto;
+        z-index: 90;
+        display: flex;
+        gap: 0.25rem;
+        overflow-x: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--light-grey);
+        padding: 0.5rem;
+    }
+
+    .nav-group {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    .nav-group + .nav-group {
+        margin-top: 0;
+    }
+
+    .nav-group-label {
+        display: none;
+    }
+
+    .nav-link {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .content {
+        padding: 1.25rem 1rem;
+    }
+
+    .file-preview {
+        display: none;
+    }
+
+    .file-open-link {
+        display: inline;
+    }
+
+    .team-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
 }

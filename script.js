@@ -123,6 +123,12 @@ function buildFileCard(group) {
         embed.src = src;
         embed.type = "application/pdf";
         card.appendChild(embed);
+
+        const open = el("a", "download-link file-open-link", "Open PDF");
+        open.href = src;
+        open.target = "_blank";
+        open.rel = "noopener";
+        card.appendChild(open);
     }
 
     versions.forEach(version => {
