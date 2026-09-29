@@ -1,72 +1,65 @@
 /* ===========================================================================
-   FILES
+   FILES (shared team repository)
 
-   Each entry below is one card on the Files page. Cards appear in the order
-   they are listed here. Within a card, versions are sorted newest-first
-   automatically.
+   Put the file anywhere inside the Files/ folder, using subfolders however
+   you like, then add one line for it below. The path is relative to Files/,
+   and the folders in the path become the folders on the page.
 
-   To add a NEW VERSION of a document that already has a card, add one line
-   to that card's versions list:
+       "Datasheets/Pixhawk 4.pdf",
 
-       { date: "2026-09-20", formats: ["docx", "pdf"] },
-
-   The download links are built from the folder, the date, and the format,
-   so this line points at:
-
-       PS/2026-09-20_PS.docx
-       PS/2026-09-20_PS.pdf
-
-   Name your files that way and there is nothing else to change. The PDF
-   preview always shows the newest version that has a "pdf" format.
-
-   To add a NEW DOCUMENT, copy this template:
+   That's all it needs. Add more detail by writing it as an object instead:
 
    {
-       title: "Critical Design Review",    REQUIRED. Heading on the card.
-       folder: "CDR",                      REQUIRED. Folder holding the files.
-       slug: "CDR",                        Optional. Filename part after the
-                                           date. Defaults to the folder name.
-       preview: false,                     Optional. Set false to hide the PDF
-                                           preview, or give a path to pin one.
-       versions: [
-           { date: "2026-10-01", formats: ["pptx", "pdf"] }
-       ]
+       path: "CAD/Chassis/Top Plate.step",   REQUIRED. Location inside Files/.
+       date: "2026-10-02",                   Optional. YYYY-MM-DD, last changed.
+       by: "Rebecca Ueltschey",              Optional. Who added it.
+       note: "Rev B, 3 mm holes",            Optional. Short description.
+       tags: ["Chassis", "Rev B"],           Optional. Searchable labels.
+       href: "https://..."                   Optional. Link here instead of
+                                             Files/<path>. Use it for files
+                                             stored elsewhere (Google Drive,
+                                             OneDrive, a vendor site).
    },
 
-   If a file does not follow the naming convention, replace that format
-   string with a spelled-out link instead:
-
-       { date: "2026-10-01", formats: [{ label: "Download as ZIP", href: "CDR/models.zip" }] }
-
-   Watch the commas: every entry ends with a comma after its closing brace.
+   Notes:
+   - Any file type can be listed. These preview right in the browser:
+     images, PDFs, video, audio, .glb/.gltf 3D models, CSV/TSV tables, and
+     plain text or code (.txt, .md, .c, .cpp, .ino, .py, .json, .param ...).
+     Everything else (Office files, STEP, Inventor, KiCad, ZIP ...) gets a
+     download button.
+   - STL files can't be previewed; export a .glb copy as well if you want
+     one people can spin around on the page.
+   - Cloudflare Pages rejects files over 25 MB. Upload big files to Google
+     Drive or OneDrive and list them here with an href.
+   - If a row shows "Missing", the path doesn't match a real file. Check the
+     spelling and capitalization.
+   - Watch the commas: every entry ends with a comma.
    =========================================================================== */
 
-const fileGroups = [
+const sharedFiles = [
 
     {
-        title: "Problem Statement",
-        folder: "PS",
-        versions: [
-            { date: "2026-09-16", formats: ["docx", "pdf"] },
-            { date: "2026-09-14", formats: ["docx", "pdf"] }
-        ]
+        path: "CAD/Drivetrain/Drivetrain Motor FIT0185.glb",
+        href: "Files/Drivetrain Motor FIT0185.glb",
+        date: "2026-09-28",
+        by: "Nolan Brechtel",
+        note: "Simplified model of the DFRobot FIT0185 geared motor, built from the datasheet.",
+        tags: ["Drivetrain"]
     },
-
     {
-        title: "PDR Poster",
-        folder: "PDR_Poster",
-        versions: [
-            { date: "2026-09-14", formats: ["pptx", "pdf"] },
-            { date: "2026-09-12", formats: ["pptx", "pdf"] }
-        ]
+        path: "CAD/Drivetrain/Drivetrain Motor FIT0185.stl",
+        href: "Files/Drivetrain Motor FIT0185.stl",
+        date: "2026-09-28",
+        by: "Nolan Brechtel",
+        note: "Simplified model of the DFRobot FIT0185 geared motor, built from the datasheet.",
+        tags: ["Drivetrain"]
     },
-
     {
-        title: "Project Proposal and Team Charter",
-        folder: "PPTC",
-        versions: [
-            { date: "2026-09-09", formats: ["pdf"] }
-        ]
+        path: "Datasheets/FIT0185 Dimensions.png",
+        href: "https://dfimg.dfrobot.com/enshop/image/data/FIT0185/FIT0185_Dimension.PNG",
+        date: "2026-09-28",
+        note: "Dimension drawing for the drivetrain motor, from DFRobot.",
+        tags: ["Drivetrain"]
     }
 
 ];

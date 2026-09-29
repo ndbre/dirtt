@@ -31,6 +31,9 @@
                 <a class="nav-link" href="#devlog" data-page="devlog">
                     <span class="nav-label">Devlog</span>
                 </a>
+                <a class="nav-link" href="#deliverables" data-page="deliverables">
+                    <span class="nav-label">Deliverables</span>
+                </a>
                 <a class="nav-link" href="#files" data-page="files">
                     <span class="nav-label">Files</span>
                 </a>
@@ -50,6 +53,11 @@
 
                 <h2 class="section-title">Team</h2>
                 <div class="team-grid" id="team-grid"></div>
+
+                <h2 class="section-title">AI Disclosure</h2>
+                <div class="section-text">
+                    <p>Parts of this website's code (layout, styling, and scripts) were written with help from Claude Code. Team members directed the work and reviewed the results before publishing.</p>
+                </div>
             </section>
 
             <section class="page" id="devlog">
@@ -57,15 +65,34 @@
                 <div class="devlog-list" id="devlog-list"></div>
             </section>
 
+            <section class="page" id="deliverables">
+                <h1 class="page-title">Deliverables</h1>
+                <div class="deliverable-list" id="deliverable-list"></div>
+            </section>
+
             <section class="page" id="files">
                 <h1 class="page-title">Files</h1>
-                <div class="file-list" id="file-list"></div>
+                <p class="description">Shared team files: CAD, datasheets, code, test data, and anything else we're working with.</p>
+                <div class="repo-toolbar">
+                    <input type="search" class="repo-search" id="repo-search" placeholder="Search files" aria-label="Search files">
+                    <select class="repo-select" id="repo-type" aria-label="Filter by type">
+                        <option value="all">All types</option>
+                    </select>
+                    <select class="repo-select" id="repo-sort" aria-label="Sort by">
+                        <option value="name">Sort: Name</option>
+                        <option value="date">Sort: Newest</option>
+                        <option value="type">Sort: Type</option>
+                    </select>
+                </div>
+                <nav class="repo-breadcrumb" id="repo-breadcrumb" aria-label="Folder"></nav>
+                <div class="repo-list" id="repo-list"></div>
             </section>
 
         </main>
     </div>
 
     <script src="devlog.js"></script>
+    <script src="deliverables.js"></script>
     <script src="files.js"></script>
     <script src="team.js"></script>
     <script src="script.js"></script>

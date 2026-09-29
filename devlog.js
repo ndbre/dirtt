@@ -11,6 +11,9 @@
        images: [                            Optional. Put files in Devlog/.
            { src: "Devlog/2026-09-23_img.jpg", caption: "Image Caption" }
        ],
+       models: [                            Optional. 3D models (.glb or .gltf). Put files in Devlog/.
+           { src: "Devlog/2026-09-23_chassis.glb", caption: "Model Caption" }
+       ],
        links: [                             Optional. Files, docs, videos.
            { label: "PDR Poster", href: "PDR_Poster/2026-09-14_PDR_Poster.pdf" }
        ]
@@ -18,9 +21,30 @@
 
    Notes:
    - A caption is optional: { src: "Devlog/photo.jpg" } works fine.
+   - Models must be .glb or .gltf. STL/STEP/SolidWorks files won't load; export
+     or convert to .glb first (e.g. open the STL in Blender and File > Export > glTF).
+   - Models can also take a poster image shown while loading:
+     { src: "Devlog/chassis.glb", poster: "Devlog/chassis.png" }
    =========================================================================== */
 
 const devlogEntries = [
+    {
+       date: "2026-09-28",             
+       title: "Drivetrain Motor Modeled",          
+       author: "Nolan Brechtel",        
+       tags: ["Design", "CAD"],     
+       body: [                       
+           "In my free time, I modeled the drivetrain motor in Autodesk Inventor. \
+           I used the datasheet to get the dimensions and created a simplified version of the motor. \
+           This will be useful for integrating it into the chassis design and ensuring proper fitment with other components."
+       ],
+       models: [        
+           { src: "Files/Drivetrain Motor FIT0185.glb", caption: "FIT0185 Motor" }
+       ],
+       links: [                    
+           { label: "FIT0185 Dimensions", href: "https://dfimg.dfrobot.com/enshop/image/data/FIT0185/FIT0185_Dimension.PNG" }
+       ]
+    },
     {
         date: "2026-09-22",
         title: "Initial Design Talk",
