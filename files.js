@@ -60,6 +60,13 @@ const sharedFiles = [
         date: "2026-09-28",
         note: "Dimension drawing for the drivetrain motor, from DFRobot.",
         tags: ["Drivetrain"]
+    },
+    {
+        path: "Datasheets/RS485 Soil Sensor.png",
+        href: "https://api.mikroelectron.com/storage/25914/ISO9lwzIARu2t8KIbqfXfadoiwvQDFH5gtRgCdNq.pdf",
+        date: "2026-09-28",
+        note: "Datasheet for the Soil Sensor, from DFRobot.",
+        tags: ["Soil Sensing"]
     }
 
 ];
