@@ -39,6 +39,11 @@ body {
     width: auto;
 }
 
+.infographic {
+    max-width: 100%;
+    height: auto;
+}
+
 .site-title {
     font-size: 1.5rem;
     font-weight: 700;
