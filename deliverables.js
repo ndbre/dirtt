@@ -47,9 +47,18 @@
 const deliverableGroups = [
 
     {
+        title: "Design Requirements Specification",
+        folder: "DRS",
+        versions: [
+            { date: "2026-10-14", formats: ["docx", "pdf"] },
+        ]
+    },
+
+    {
         title: "Problem Statement",
         folder: "PS",
         versions: [
+            { date: "2026-10-02", formats: ["docx", "pdf"] },
             { date: "2026-09-16", formats: ["docx", "pdf"] },
             { date: "2026-09-14", formats: ["docx", "pdf"] }
         ]
