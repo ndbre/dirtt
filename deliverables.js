@@ -45,6 +45,13 @@
    =========================================================================== */
 
 const deliverableGroups = [
+    {
+        title: "Mid-Semester Design Review",
+        folder: "MSDR",
+        versions: [
+            { date: "2026-10-18", formats: ["pptx", "pdf"] },
+        ]
+    },
 
     {
         title: "Design Requirements Specification",
