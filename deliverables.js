@@ -57,7 +57,7 @@ const deliverableGroups = [
         title: "Ethics Presentation",
         folder: "EP",
         versions: [
-            { date: "2026-10-28", formats: ["pptx", "pdf"] },
+            { date: "2026-10-28", formats: ["pdf"] },
         ]
     },
 
