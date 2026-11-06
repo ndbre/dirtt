@@ -50,6 +50,8 @@ const deliverableGroups = [
         folder: "DA",
         versions: [
             { date: "2026-11-05", formats: ["docx", "pdf"] },
+            { date: "2026-11-06", formats: ["docx", "pdf"] },
+            
         ]
     },
 
