@@ -29,6 +29,38 @@
 
 const devlogEntries = [
     {
+       date: "2026-10-23",             
+       title: "More Parts Ordering",          
+       author: "Nolan Brechtel",        
+       tags: ["Parts"],     
+       body: [                       
+           "We've ordered a couple more parts, the motors, Raspberry Pi 3, and the motor driver. Once these parts arrive, \
+           once these parts arrive, we have everything we need for the Control and Data Subsystem. With the motors, we can \
+           make the prototype chassis and 3D print some mounts for them, completing the Chassis and Drivetrain subsytem."
+       ]
+    },
+    {
+       date: "2026-10-20",             
+       title: "Other parts",          
+       author: "Nolan Brechtel",        
+       tags: ["Parts"],     
+       body: [                       
+           "The remaining parts from our first order have arrived, most notably, the Soil Sensor. \
+           We'll get some soil to test it on and see how the output of it looks like."
+       ]
+    },
+    {
+       date: "2026-10-06",           
+       title: "LoRa Radio Bonnet",          
+       author: "Nolan Brechtel",        
+       tags: ["Parts", "Testing"],     
+       body: [                       
+           "Our LoRa Radio Bonnets we've ordered has arrived. Without another Raspberry Pi, we are unable to \
+           to test data transmission between the two of them, but with the Raspberry Pi we do have, we were able \
+           to get text to be displayed onto the OLED screen and the button presses recorded."
+       ]
+    },
+    {
        date: "2026-09-30",             
        title: "Meetings",          
        author: "Nolan Brechtel",        

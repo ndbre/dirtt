@@ -46,6 +46,22 @@
 
 const deliverableGroups = [
     {
+        title: "Design Approach",
+        folder: "DA",
+        versions: [
+            { date: "2026-11-05", formats: ["docx", "pdf"] },
+        ]
+    },
+
+    {
+        title: "Ethics Presentation",
+        folder: "EP",
+        versions: [
+            { date: "2026-10-28", formats: ["pptx", "pdf"] },
+        ]
+    },
+
+    {
         title: "Mid-Semester Design Review",
         folder: "MSDR",
         versions: [

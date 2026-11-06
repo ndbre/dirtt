@@ -43,9 +43,46 @@
         <main class="content">
 
             <section class="page is-active" id="home">
-                <h1 class="page-title">Home</h1>
-                <p class="description">Temporary Text</p>
+                <h1 class="page-title">D.I.R.T.T.</h1>
+                <p class="home-subtitle">Digital Instrument for Remote Terrain Testing</p>
+                <p class="description">An autonomous, solar-powered rover that maps soil conditions across a field, so farmers know where to test next.</p>
                 <img src="Site/Home1.png" alt="Infographic" class="infographic">
+
+                <h2 class="section-title">What is D.I.R.T.T.?</h2>
+                <div class="section-text">
+                    <p>Soil can vary a lot across a single field. Testing it by hand means walking acres and taking samples, which is slow and easy to skip. D.I.R.T.T. does the legwork. It drives itself to points about 100&nbsp;m apart, pushes a probe into the ground, and measures pH, conductivity, temperature and moisture at each stop. Every reading is sent back by radio with its GPS location, building a map of the field as the rover works.</p>
+                    <p>D.I.R.T.T. is a screening tool, not a replacement for a soil lab. Its job is to show where conditions change, so farmers can send lab samples from the spots that matter.</p>
+                </div>
+
+                <h2 class="section-title">How it works</h2>
+                <div class="section-text">
+                    <ol class="home-list">
+                        <li><strong>Plan:</strong> The base station sends the rover its next sampling point.</li>
+                        <li><strong>Drive:</strong> The rover navigates there by GPS and uses LiDAR to avoid obstacles.</li>
+                        <li><strong>Probe:</strong> A linear actuator pushes a 4-in-1 soil sensor into the ground.</li>
+                        <li><strong>Measure:</strong> The sensor reads pH, electrical conductivity, temperature and moisture.</li>
+                        <li><strong>Report:</strong> The reading and its location go back to the base station over long-range LoRa radio, and a copy is saved on the rover.</li>
+                        <li><strong>Repeat:</strong> The rover moves to the next point until the field is mapped.</li>
+                    </ol>
+                </div>
+
+                <h2 class="section-title">Key features</h2>
+                <div class="section-text">
+                    <ul class="home-list">
+                        <li><strong>Autonomous navigation:</strong> GPS waypoint driving with 360° LiDAR obstacle detection.</li>
+                        <li><strong>Four soil measurements:</strong> pH, EC, temperature and moisture from one rugged, waterproof probe.</li>
+                        <li><strong>Long-range radio:</strong> LoRa link to the base station, with no Wi-Fi or cell service needed.</li>
+                        <li><strong>Mostly solar-powered:</strong> a 30&nbsp;W panel charges a LiFePO4 battery for multi-day operation.</li>
+                        <li><strong>No data lost:</strong> every reading is stored on the rover and at the base station.</li>
+                        <li><strong>Built-in safety:</strong> physical emergency stop and a radio STOP command.</li>
+                        <li><strong>Low cost:</strong> designed and built for under $1,000.</li>
+                    </ul>
+                </div>
+
+                <h2 class="section-title">Project status</h2>
+                <div class="section-text">
+                    <p>D.I.R.T.T. is a senior capstone project at Mississippi State University. This semester the team is building and testing the soil sensing, drivetrain and data systems. Autonomous navigation, solar charging and full field testing follow next semester.</p>
+                </div>
             </section>
 
             <section class="page" id="about">

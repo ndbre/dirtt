@@ -667,6 +667,25 @@ body {
     margin: 0.75rem 0 0;
 }
 
+.home-subtitle {
+    margin: -0.5rem 0 0.75rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.home-list {
+    margin: 0.75rem 0 0;
+    padding-left: 1.25rem;
+}
+
+.home-list li {
+    margin-top: 0.4rem;
+}
+
+.home-list strong {
+    color: var(--text);
+}
+
 .team-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
