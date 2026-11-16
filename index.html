@@ -79,6 +79,18 @@
                     </ul>
                 </div>
 
+                <h2 class="section-title">Subsystems</h2>
+                <div class="section-text">
+                    <p>D.I.R.T.T. is built from five subsystems, each led by one team member.</p>
+                    <ul class="home-list">
+                        <li><strong>Power and Charging (George Utz):</strong> A 30&nbsp;W solar panel on the rover's roof charges a 12.8&nbsp;V, 20&nbsp;Ah lithium iron phosphate battery. Fuses protect every circuit, and a regulator supplies clean 5&nbsp;V to the computers. A red emergency-stop button cuts power to the motors and probe instantly.</li>
+                        <li><strong>Navigation (Nolan Brechtel):</strong> An ArduPilot flight controller steers the rover from point to point using GPS and a compass. A 360° LiDAR scanner watches for obstacles. Safety limits keep it inside the field and send it home if anything goes wrong.</li>
+                        <li><strong>Drivetrain (Rebecca Ueltschey):</strong> Four 12&nbsp;V gearmotors drive 3D-printed 7-inch wheels with flexible tires. The rover steers like a tank: by turning the left and right wheels at different speeds, which lets it turn in place. A plywood double-deck chassis carries the load.</li>
+                        <li><strong>Data Backup and Control (Cara Belew):</strong> A Raspberry Pi on the rover runs each mission and logs every soil reading with its GPS location and time. It sends that data to a base station over LoRa, a long-range radio that needs no Wi-Fi or cell service. Every message is confirmed and resent if lost, so no reading goes missing.</li>
+                        <li><strong>Soil Sensing (Zachary Morrow):</strong> At each stop, a linear actuator pushes a waterproof 4-in-1 probe into the ground. The probe measures pH, electrical conductivity, temperature and moisture, then the actuator pulls it back out. If the probe hits a rock, the actuator stops right away.</li>
+                    </ul>
+                </div>
+
                 <h2 class="section-title">Project status</h2>
                 <div class="section-text">
                     <p>D.I.R.T.T. is a senior capstone project at Mississippi State University. This semester the team is building and testing the soil sensing, drivetrain and data systems. Autonomous navigation, solar charging and full field testing follow next semester.</p>

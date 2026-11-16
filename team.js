@@ -20,7 +20,7 @@ const teamMembers = [
         role: "Project Manager | Navigation Lead",
         major: "Computer Engineering",
         email: "ndb209@msstate.edu",
-        photo: "",
+        photo: "Team/Nolan.png",
         bio: ""
     },
 
@@ -29,7 +29,7 @@ const teamMembers = [
         role: "Chief Scientist | Power Lead",
         major: "Electrical Engineering",
         email: "gdu11@msstate.edu",
-        photo: "",
+        photo: "Team/George.png",
         bio: ""
     },
 
@@ -38,7 +38,7 @@ const teamMembers = [
         role: "Control and Data Backup Lead",
         major: "Computer Engineering",
         email: "cgb331@msstate.edu",
-        photo: "",
+        photo: "Team/Cara.png",
         bio: ""
     },
 
@@ -47,7 +47,7 @@ const teamMembers = [
         role: "Soil Sensing Lead",
         major: "Computer Engineering",
         email: "zbm38@msstate.edu",
-        photo: "",
+        photo: "Team/Zach.png",
         bio: ""
     },
 
@@ -57,6 +57,15 @@ const teamMembers = [
         major: "Electrical Engineering",
         email: "rmu21@msstate.edu",
         photo: "",
+        bio: ""
+    },
+
+    {
+        name: "Christopher Hudson",
+        role: "Faculty Advisor",
+        major: "",
+        email: "",
+        photo: "Team/Hudson.jpeg",
         bio: ""
     }
 

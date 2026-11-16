@@ -41,10 +41,18 @@
    Watch the commas: every entry ends with a comma after its closing brace.
 
    For working files that aren't formal deliverables (CAD, datasheets, code,
-   test data, photos...), use files.js instead.
+   test data, photos...), use the dirtt-files GitHub repo instead.
    =========================================================================== */
 
 const deliverableGroups = [
+    {
+        title: "Final Design Review",
+        folder: "FDR",
+        versions: [
+            { date: "2026-11-15", formats: ["pptx", "pdf"] }
+        ]
+    },
+
     {
         title: "Design Approach",
         folder: "DA",
