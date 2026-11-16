@@ -56,7 +56,7 @@ const teamMembers = [
         role: "Drivetrain and Chassis Lead",
         major: "Electrical Engineering",
         email: "rmu21@msstate.edu",
-        photo: "",
+        photo: "Team/Rebecca.jpg",
         bio: ""
     },
 
