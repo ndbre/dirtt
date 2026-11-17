@@ -1,0 +1,27 @@
+# D.I.R.T.T. SITL parameters for nav_sim.py
+# Load once:  sim_vehicle.py -v Rover -f rover-skid --console --map --add-param-file=dirtt_sitl.parm
+#
+# Arrival: the flight controller stops steering within WP_RADIUS; the Pi counts the point
+# as reached within WP_RADIUS + 0.5 m (1.5 m). SITL's rover default is 3 m, which is too loose for NV2.
+WP_RADIUS 1
+WP_SPEED 0.6
+#
+# Field edge + obstacles live in the geofence. Report-only: avoidance does the work, not the fence.
+FENCE_ENABLE 1
+FENCE_TYPE 6
+FENCE_ACTION 0
+#
+# Simulated LiDAR: SITL's proximity sensor measures the distance to the fence (including
+# exclusion circles) in 8 directions, like the RPLIDAR feeding the flight controller.
+PRX1_TYPE 10
+#
+# Obstacle avoidance: BendyRuler path planner. Keep 1.5 m from obstacles, look 5 m ahead
+# (the defaults, 5 m / 15 m, are sized for bigger vehicles than a 0.6 m rover on a 15 m grid).
+OA_TYPE 1
+OA_MARGIN_MAX 1.5
+OA_BR_LOOKAHEAD 5
+#
+# Simple avoidance OFF. In Rover 4.6 it refuses to pivot when an obstacle (or, in SITL, the
+# field edge) is within ~3 m ahead, so a rover facing a corner never turns around.
+# BendyRuler (above) still steers around obstacles.
+AVOID_ENABLE 0
