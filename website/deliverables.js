@@ -41,7 +41,8 @@
    Watch the commas: every entry ends with a comma after its closing brace.
 
    For working files that aren't formal deliverables (CAD, datasheets, code,
-   test data, photos...), use the dirtt-files GitHub repo instead.
+   test data, photos...), put them in the repo folders outside website/ (cad/, code/,
+   datasheets/, docs/). Only website/ is published by Cloudflare Pages.
    =========================================================================== */
 
 const deliverableGroups = [
@@ -50,7 +51,7 @@ const deliverableGroups = [
         folder: "FDR",
         versions: [
             { date: "2026-11-17", formats: [
-                { label: "Download as PPTX", href: "https://github.com/ndbre/dirtt-files/raw/refs/heads/main/DRITT%20FDR.pptx" },
+                { label: "Download as PPTX", href: "https://github.com/ndbre/dirtt/raw/refs/heads/master/docs/DIRTT_FDR_2026-11-17.pptx" },
                 "pdf"
             ] },
             { date: "2026-11-15", formats: ["pptx", "pdf"] }
