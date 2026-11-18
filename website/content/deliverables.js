@@ -5,25 +5,27 @@
    order they are listed here. Within a card, versions are sorted newest-first
    automatically.
 
-   To add a NEW VERSION of a document that already has a card, add one line
-   to that card's versions list:
+   Files live in the repo's docs/<folder>/ folder (NOT inside website/) and
+   are named <date>_<slug>.<ext>. Any size is fine; the site serves them
+   from GitHub, so Cloudflare's 25 MB limit doesn't apply.
+
+   To add a NEW VERSION of a document that already has a card, drop the files
+   in its folder and add one line to that card's versions list:
 
        { date: "2026-09-20", formats: ["docx", "pdf"] },
 
-   The download links are built from the folder, the date, and the format,
-   so this line points at:
+   That line points at:
 
-       PS/2026-09-20_PS.docx
-       PS/2026-09-20_PS.pdf
+       docs/PS/2026-09-20_PS.docx
+       docs/PS/2026-09-20_PS.pdf
 
-   Name your files that way and there is nothing else to change. The PDF
-   preview always shows the newest version that has a "pdf" format.
+   The PDF preview always shows the newest version that has a "pdf" format.
 
-   To add a NEW DOCUMENT, copy this template:
+   To add a NEW DOCUMENT, make a folder in docs/ and copy this template:
 
    {
        title: "Critical Design Review",    REQUIRED. Heading on the card.
-       folder: "CDR",                      REQUIRED. Folder holding the files.
+       folder: "CDR",                      REQUIRED. Folder in docs/.
        slug: "CDR",                        Optional. Filename part after the
                                            date. Defaults to the folder name.
        preview: false,                     Optional. Set false to hide the PDF
@@ -36,13 +38,10 @@
    If a file does not follow the naming convention, replace that format
    string with a spelled-out link instead:
 
-       { date: "2026-10-01", formats: [{ label: "Download as ZIP", href: "CDR/models.zip" }] }
+       { date: "2026-10-01", formats: [{ label: "Download as ZIP", href: "docs/CDR/models.zip" }] }
 
-   Watch the commas: every entry ends with a comma after its closing brace.
-
-   For working files that aren't formal deliverables (CAD, datasheets, code,
-   test data, photos...), put them in the repo folders outside website/ (cad/, code/,
-   datasheets/, docs/). Only website/ is published by Cloudflare Pages.
+   Working files that aren't formal deliverables (CAD, datasheets, code, test
+   data, photos) go in cad/, code/ or datasheets/.
    =========================================================================== */
 
 const deliverableGroups = [
@@ -50,10 +49,7 @@ const deliverableGroups = [
         title: "Final Design Review",
         folder: "FDR",
         versions: [
-            { date: "2026-11-17", formats: [
-                { label: "Download as PPTX", href: "https://github.com/ndbre/dirtt/raw/refs/heads/master/docs/DIRTT_FDR_2026-11-17.pptx" },
-                "pdf"
-            ] },
+            { date: "2026-11-17", formats: ["pptx", "pdf"] },
             { date: "2026-11-15", formats: ["pptx", "pdf"] }
         ]
     },
@@ -62,9 +58,8 @@ const deliverableGroups = [
         title: "Design Approach",
         folder: "DA",
         versions: [
-            { date: "2026-11-05", formats: ["docx", "pdf"] },
             { date: "2026-11-06", formats: ["docx", "pdf"] },
-            
+            { date: "2026-11-05", formats: ["docx", "pdf"] }
         ]
     },
 
@@ -72,7 +67,7 @@ const deliverableGroups = [
         title: "Ethics Presentation",
         folder: "EP",
         versions: [
-            { date: "2026-10-28", formats: ["pdf"] },
+            { date: "2026-10-28", formats: ["pdf"] }
         ]
     },
 
@@ -80,7 +75,7 @@ const deliverableGroups = [
         title: "Mid-Semester Design Review",
         folder: "MSDR",
         versions: [
-            { date: "2026-10-18", formats: ["pptx", "pdf"] },
+            { date: "2026-10-18", formats: ["pptx", "pdf"] }
         ]
     },
 
@@ -88,7 +83,8 @@ const deliverableGroups = [
         title: "Design Requirements Specification",
         folder: "DRS",
         versions: [
-            { date: "2026-10-14", formats: ["docx", "pdf"] },
+            { date: "2026-10-19", formats: ["docx", "pdf"] },
+            { date: "2026-10-14", formats: ["docx", "pdf"] }
         ]
     },
 
@@ -99,6 +95,14 @@ const deliverableGroups = [
             { date: "2026-10-02", formats: ["docx", "pdf"] },
             { date: "2026-09-16", formats: ["docx", "pdf"] },
             { date: "2026-09-14", formats: ["docx", "pdf"] }
+        ]
+    },
+
+    {
+        title: "Preliminary Design Review",
+        folder: "PDR",
+        versions: [
+            { date: "2026-09-12", formats: ["pptx", "pdf"] }
         ]
     },
 
@@ -118,5 +122,4 @@ const deliverableGroups = [
             { date: "2026-09-09", formats: ["pdf"] }
         ]
     }
-
 ];

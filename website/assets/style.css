@@ -44,11 +44,6 @@ body {
     height: auto;
 }
 
-.site-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--maroon);
-}
 
 .title-bar-spacer {
     flex-grow: 1;

@@ -1,0 +1,18 @@
+# Cloudflare Pages redirects. Keeps links from before the 2026-11 cleanup
+# working (deliverable PDFs may have been shared or submitted).
+# Format: <old path> <new path> <status>. Not served as a page.
+
+/FDR/*          /docs/FDR/:splat          301
+/DA/*           /docs/DA/:splat           301
+/EP/*           /docs/EP/:splat           301
+/MSDR/*         /docs/MSDR/:splat         301
+/DRS/*          /docs/DRS/:splat          301
+/PS/*           /docs/PS/:splat           301
+/PDR/*          /docs/PDR/:splat          301
+/PDR_Poster/*   /docs/PDR_Poster/:splat   301
+/PPTC/*         /docs/PPTC/:splat         301
+/Team/*         /assets/team/:splat       301
+/Site/DIRTT.png             /assets/img/DIRTT.png             301
+/Site/DIRTT_Logo_Small.png  /assets/img/DIRTT_Logo_Small.png  301
+/Site/Home1.png             /assets/img/Home1.png             301
+/Site/*                     /assets/img/logo/:splat           301
