@@ -49,6 +49,10 @@ const deliverableGroups = [
         title: "Final Design Review",
         folder: "FDR",
         versions: [
+            { date: "2026-11-17", formats: [
+                { label: "Download as PPTX", href: "https://github.com/ndbre/dirtt-files/raw/refs/heads/main/DRITT%20FDR.pptx" },
+                "pdf"
+            ] },
             { date: "2026-11-15", formats: ["pptx", "pdf"] }
         ]
     },
