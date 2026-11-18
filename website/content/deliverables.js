@@ -5,25 +5,26 @@
    order they are listed here. Within a card, versions are sorted newest-first
    automatically.
 
-   To add a NEW VERSION of a document that already has a card, add one line
-   to that card's versions list:
+   Files live in website/deliverables/<folder>/ and are named <date>_<slug>.<ext>
+
+   To add a NEW VERSION of a document that already has a card, drop the files
+   in its folder and add one line to that card's versions list:
 
        { date: "2026-09-20", formats: ["docx", "pdf"] },
 
-   The download links are built from the folder, the date, and the format,
-   so this line points at:
+   That line points at:
 
-       PS/2026-09-20_PS.docx
-       PS/2026-09-20_PS.pdf
+       deliverables/PS/2026-09-20_PS.docx
+       deliverables/PS/2026-09-20_PS.pdf
 
-   Name your files that way and there is nothing else to change. The PDF
-   preview always shows the newest version that has a "pdf" format.
+   The PDF preview always shows the newest version that has a "pdf" format.
 
-   To add a NEW DOCUMENT, copy this template:
+   To add a NEW DOCUMENT, make a folder in website/deliverables/ and copy
+   this template:
 
    {
        title: "Critical Design Review",    REQUIRED. Heading on the card.
-       folder: "CDR",                      REQUIRED. Folder holding the files.
+       folder: "CDR",                      REQUIRED. Folder in deliverables/.
        slug: "CDR",                        Optional. Filename part after the
                                            date. Defaults to the folder name.
        preview: false,                     Optional. Set false to hide the PDF
@@ -33,16 +34,17 @@
        ]
    },
 
-   If a file does not follow the naming convention, replace that format
-   string with a spelled-out link instead:
+   If a file does not follow the naming convention, or is too big for the
+   site (Cloudflare's limit is 25 MB per file), replace that format string
+   with a spelled-out link. Big files go in the repo's docs/ folder and are
+   linked through GitHub:
 
-       { date: "2026-10-01", formats: [{ label: "Download as ZIP", href: "CDR/models.zip" }] }
+       { label: "Download as PPTX",
+         href: "https://github.com/ndbre/dirtt/raw/refs/heads/master/docs/FILE.pptx" }
 
-   Watch the commas: every entry ends with a comma after its closing brace.
-
-   For working files that aren't formal deliverables (CAD, datasheets, code,
-   test data, photos...), put them in the repo folders outside website/ (cad/, code/,
-   datasheets/, docs/). Only website/ is published by Cloudflare Pages.
+   Working files that aren't formal deliverables (CAD, datasheets, code, test
+   data, photos) go in the repo folders outside website/: cad/, code/,
+   datasheets/, docs/. Only website/ is published.
    =========================================================================== */
 
 const deliverableGroups = [
@@ -62,9 +64,8 @@ const deliverableGroups = [
         title: "Design Approach",
         folder: "DA",
         versions: [
-            { date: "2026-11-05", formats: ["docx", "pdf"] },
             { date: "2026-11-06", formats: ["docx", "pdf"] },
-            
+            { date: "2026-11-05", formats: ["docx", "pdf"] }
         ]
     },
 
@@ -72,7 +73,7 @@ const deliverableGroups = [
         title: "Ethics Presentation",
         folder: "EP",
         versions: [
-            { date: "2026-10-28", formats: ["pdf"] },
+            { date: "2026-10-28", formats: ["pdf"] }
         ]
     },
 
@@ -80,7 +81,7 @@ const deliverableGroups = [
         title: "Mid-Semester Design Review",
         folder: "MSDR",
         versions: [
-            { date: "2026-10-18", formats: ["pptx", "pdf"] },
+            { date: "2026-10-18", formats: ["pptx", "pdf"] }
         ]
     },
 
@@ -88,7 +89,8 @@ const deliverableGroups = [
         title: "Design Requirements Specification",
         folder: "DRS",
         versions: [
-            { date: "2026-10-14", formats: ["docx", "pdf"] },
+            { date: "2026-10-19", formats: ["docx", "pdf"] },
+            { date: "2026-10-14", formats: ["docx", "pdf"] }
         ]
     },
 
@@ -99,6 +101,14 @@ const deliverableGroups = [
             { date: "2026-10-02", formats: ["docx", "pdf"] },
             { date: "2026-09-16", formats: ["docx", "pdf"] },
             { date: "2026-09-14", formats: ["docx", "pdf"] }
+        ]
+    },
+
+    {
+        title: "Preliminary Design Review",
+        folder: "PDR",
+        versions: [
+            { date: "2026-09-12", formats: ["pptx", "pdf"] }
         ]
     },
 
@@ -118,5 +128,4 @@ const deliverableGroups = [
             { date: "2026-09-09", formats: ["pdf"] }
         ]
     }
-
 ];

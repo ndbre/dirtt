@@ -125,14 +125,17 @@ function loadModelViewer() {
     const script = document.createElement("script");
     script.id = "model-viewer-script";
     script.type = "module";
-    script.src = "https://cdn.jsdelivr.net/npm/@google/model-viewer@4/dist/model-viewer.min.js";
+    script.src = "https://cdn.jsdelivr.net/npm/@google/model-viewer@4.4.0/dist/model-viewer.min.js";
     document.head.appendChild(script);
 }
+
+// Deliverable files live in deliverables/<folder>/<date>_<slug>.<format>
+const DELIVERABLES_DIR = "deliverables";
 
 function deliverableHref(group, version, format) {
     const slug = group.slug || group.folder;
     const name = version.name || `${version.date}_${slug}`;
-    return `${group.folder}/${name}.${format}`;
+    return `${DELIVERABLES_DIR}/${group.folder}/${name}.${format}`;
 }
 
 function previewSrc(group, versions) {

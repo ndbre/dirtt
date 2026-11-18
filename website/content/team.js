@@ -5,7 +5,7 @@
        role: "Project Manager | Navigation Lead",          Optional. Job on the team.
        major: "Computer Engineering",                      Optional.
        email: "ndb209@msstate.edu",                        Optional. Becomes a mailto link.
-       photo: "Team/image.jpg",                            Optional. Put photos in Team/.
+       photo: "assets/team/image.jpg",                            Optional. Put photos in assets/team/.
                                                            Portrait crops look best.
                                                            Without one, the frame shows initials.
        bio: "One or two sentences."                        Optional.
@@ -20,7 +20,7 @@ const teamMembers = [
         role: "Project Manager | Navigation Lead",
         major: "Computer Engineering",
         email: "ndb209@msstate.edu",
-        photo: "Team/Nolan.png",
+        photo: "assets/team/Nolan.png",
         bio: ""
     },
 
@@ -29,7 +29,7 @@ const teamMembers = [
         role: "Chief Scientist | Power Lead",
         major: "Electrical Engineering",
         email: "gdu11@msstate.edu",
-        photo: "Team/George.png",
+        photo: "assets/team/George.png",
         bio: ""
     },
 
@@ -38,7 +38,7 @@ const teamMembers = [
         role: "Control and Data Backup Lead",
         major: "Computer Engineering",
         email: "cgb331@msstate.edu",
-        photo: "Team/Cara.png",
+        photo: "assets/team/Cara.png",
         bio: ""
     },
 
@@ -47,7 +47,7 @@ const teamMembers = [
         role: "Soil Sensing Lead",
         major: "Computer Engineering",
         email: "zbm38@msstate.edu",
-        photo: "Team/Zach.png",
+        photo: "assets/team/Zach.png",
         bio: ""
     },
 
@@ -56,7 +56,7 @@ const teamMembers = [
         role: "Drivetrain and Chassis Lead",
         major: "Electrical Engineering",
         email: "rmu21@msstate.edu",
-        photo: "Team/Rebecca.jpg",
+        photo: "assets/team/Rebecca.jpg",
         bio: ""
     },
 
@@ -65,7 +65,7 @@ const teamMembers = [
         role: "Faculty Advisor",
         major: "",
         email: "",
-        photo: "Team/Hudson.jpeg",
+        photo: "assets/team/Hudson.jpeg",
         bio: ""
     }
 
