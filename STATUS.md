@@ -6,8 +6,7 @@ _Last updated: 2026-11-18 (after the FDR)._
 
 ## Deliverables
 
-- FDR presented 2026-11-17. Deck: `website/deliverables/FDR/2026-11-17_FDR.pptx` (53 MB, too big
-  for Cloudflare, so the site links it from GitHub); PDF on the site. An editable copy lives as a Claude Slides artifact:
+- FDR presented 2026-11-17. Deck and PDF: `docs/FDR/2026-11-17_FDR.*` (all deliverables live in `docs/`). An editable copy lives as a Claude Slides artifact:
   https://claude.ai/artifact/HWR3RGkAxLph8hyWFwR5JS
 - Website: https://dirtt.ndbre.com (domain `ndbre.com` on Cloudflare). Copy draft for the site:
   https://claude.ai/artifact/5z8jnc6e7pbV1vibVTBp2V

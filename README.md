@@ -13,6 +13,8 @@ Team site: https://dirtt.ndbre.com
 | `cad/` | CAD files: drivetrain and chassis, soil sensing, jigs, mounts | No |
 | `code/` | Rover and base-station code | No |
 | `datasheets/` | Component data and spec sheets, by subsystem | No |
+| `docs/` | Every deliverable, `docs/<TYPE>/<YYYY-MM-DD>_<TYPE>.<ext>`, any size | Served at `/docs/...` from GitHub by `functions/` |
+| `functions/` | Cloudflare Pages Function that serves `docs/` on the site | Runs on Cloudflare |
 
 ### Inside `website/`
 
@@ -22,7 +24,6 @@ Team site: https://dirtt.ndbre.com
 | `content/devlog.js` | Devlog entries | Often |
 | `content/deliverables.js` | Deliverables cards (instructions at the top) | Every deliverable |
 | `content/team.js` | Team members | Rarely |
-| `deliverables/<TYPE>/` | Every deliverable file, named `<YYYY-MM-DD>_<TYPE>.<ext>` (including ones over 25 MB) | Every deliverable |
 | `devlog/<YYYY-MM-DD>/` | Images, models and files used by a devlog entry | With devlog entries |
 | `assets/` | Stylesheet, script, logo/site images, team photos | Rarely |
 | `_redirects` | Keeps pre-cleanup URLs (e.g. `/FDR/...`) working | Rarely |
@@ -32,10 +33,10 @@ Team site: https://dirtt.ndbre.com
 ## Cloudflare Pages settings
 
 - Production branch: `master`
-- Build command: `find website -type f -size +25M -print -delete`
+- Build command: *(none)*
 - Build output directory: `website`
 
-Pages rejects any single file over 25 MiB. The build command drops those files from the deploy
-(they stay in the repo), and the site links to them on GitHub instead: list the format under
-`onGitHub` in `website/content/deliverables.js`. The links look like
-`https://github.com/ndbre/dirtt/raw/refs/heads/master/website/deliverables/<TYPE>/<file>`.
+Pages only publishes `website/`, and rejects files over 25 MiB. Deliverables therefore live in
+`docs/`, and `functions/docs/[[path]].js` serves them at `dirtt.ndbre.com/docs/...` by fetching
+them from GitHub (master, or the branch for a `<branch>.dirtt.pages.dev` preview) with the right
+file type, so PDFs still preview in the page. Nothing in `docs/` counts against the 25 MiB limit.

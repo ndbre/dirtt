@@ -129,18 +129,14 @@ function loadModelViewer() {
     document.head.appendChild(script);
 }
 
-// Deliverable files live in deliverables/<folder>/<date>_<slug>.<format>
-const DELIVERABLES_DIR = "deliverables";
-
-// Files over Cloudflare's 25 MiB limit are left out of the deploy (see the
-// Pages build command in README.md), so they are served from GitHub instead.
-const GITHUB_RAW = "https://github.com/ndbre/dirtt/raw/refs/heads/master/website";
+// Deliverable files live in the repo's docs/<folder>/<date>_<slug>.<format>.
+// docs/ is outside website/; functions/docs/[[path]].js serves it at /docs/.
+const DOCS_DIR = "docs";
 
 function deliverableHref(group, version, format) {
     const slug = group.slug || group.folder;
     const name = version.name || `${version.date}_${slug}`;
-    const path = `${DELIVERABLES_DIR}/${group.folder}/${name}.${format}`;
-    return (version.onGitHub || []).includes(format) ? `${GITHUB_RAW}/${path}` : path;
+    return `${DOCS_DIR}/${group.folder}/${name}.${format}`;
 }
 
 function previewSrc(group, versions) {

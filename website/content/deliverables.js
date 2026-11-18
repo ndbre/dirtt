@@ -5,7 +5,9 @@
    order they are listed here. Within a card, versions are sorted newest-first
    automatically.
 
-   Files live in website/deliverables/<folder>/ and are named <date>_<slug>.<ext>
+   Files live in the repo's docs/<folder>/ folder (NOT inside website/) and
+   are named <date>_<slug>.<ext>. Any size is fine; the site serves them
+   from GitHub, so Cloudflare's 25 MB limit doesn't apply.
 
    To add a NEW VERSION of a document that already has a card, drop the files
    in its folder and add one line to that card's versions list:
@@ -14,17 +16,16 @@
 
    That line points at:
 
-       deliverables/PS/2026-09-20_PS.docx
-       deliverables/PS/2026-09-20_PS.pdf
+       docs/PS/2026-09-20_PS.docx
+       docs/PS/2026-09-20_PS.pdf
 
    The PDF preview always shows the newest version that has a "pdf" format.
 
-   To add a NEW DOCUMENT, make a folder in website/deliverables/ and copy
-   this template:
+   To add a NEW DOCUMENT, make a folder in docs/ and copy this template:
 
    {
        title: "Critical Design Review",    REQUIRED. Heading on the card.
-       folder: "CDR",                      REQUIRED. Folder in deliverables/.
+       folder: "CDR",                      REQUIRED. Folder in docs/.
        slug: "CDR",                        Optional. Filename part after the
                                            date. Defaults to the folder name.
        preview: false,                     Optional. Set false to hide the PDF
@@ -34,20 +35,13 @@
        ]
    },
 
-   FILES OVER 25 MB: Cloudflare won't host them, so the deploy skips them.
-   Name and place them like any other file, then list the format in onGitHub
-   so its link points at the copy on GitHub instead:
-
-       { date: "2026-11-17", formats: ["pptx", "pdf"], onGitHub: ["pptx"] },
-
    If a file does not follow the naming convention, replace that format
    string with a spelled-out link instead:
 
-       { date: "2026-10-01", formats: [{ label: "Download as ZIP", href: "deliverables/CDR/models.zip" }] }
+       { date: "2026-10-01", formats: [{ label: "Download as ZIP", href: "docs/CDR/models.zip" }] }
 
    Working files that aren't formal deliverables (CAD, datasheets, code, test
-   data, photos) go in the repo folders outside website/: cad/, code/,
-   datasheets/. Only website/ is published.
+   data, photos) go in cad/, code/ or datasheets/.
    =========================================================================== */
 
 const deliverableGroups = [
@@ -55,7 +49,7 @@ const deliverableGroups = [
         title: "Final Design Review",
         folder: "FDR",
         versions: [
-            { date: "2026-11-17", formats: ["pptx", "pdf"], onGitHub: ["pptx"] },
+            { date: "2026-11-17", formats: ["pptx", "pdf"] },
             { date: "2026-11-15", formats: ["pptx", "pdf"] }
         ]
     },

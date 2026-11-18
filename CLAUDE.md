@@ -25,16 +25,18 @@ Nolan prefers direct, colleague-to-colleague feedback: if something is wrong, sa
 
 - Live at https://dirtt.ndbre.com (Cloudflare Pages, production branch `master`, output
   directory `website`). Every push to another branch gets a preview deployment.
-- Plain static HTML/CSS/JS, no framework. The only build step is the size filter below; keep it
-  that way unless asked.
+- Plain static HTML/CSS/JS, no framework, no build step, plus one small Pages Function for
+  `docs/`. Keep it that way unless asked.
 - Content is data in `website/content/*.js` (`devlogEntries`, `deliverableGroups`,
   `teamMembers`), rendered by `website/assets/script.js`. Home and About text is in `index.html`.
-- Deliverables: every file (any size) goes in `website/deliverables/<TYPE>/<YYYY-MM-DD>_<TYPE>.<ext>`, then one line
-  in `content/deliverables.js`. The href is built from folder + date + format.
+- Deliverables: every file (any size) goes in `docs/<TYPE>/<YYYY-MM-DD>_<TYPE>.<ext>` at the
+  repo root, then one line in `website/content/deliverables.js`. The href (`docs/...`) is built
+  from folder + date + format.
 - Devlog attachments go in `website/devlog/<YYYY-MM-DD>/`. Avoid spaces in filenames.
-- Pages rejects files over 25 MiB. Those still go in `website/deliverables/` like everything else;
-  the Pages build command (`find website -type f -size +25M -print -delete`) leaves them out of
-  the deploy, and `onGitHub: ["pptx"]` on the version in `deliverables.js` links them from GitHub.
+- `docs/` isn't part of the deploy. `functions/docs/[[path]].js` (a Pages Function) serves
+  `/docs/<path>` by fetching it from raw.githubusercontent.com and setting the Content-Type, so
+  there's no 25 MiB limit and PDFs still embed. A file only appears on the live site once it is
+  on `master` (branch previews read their own branch).
 - `website/_redirects` keeps the old top-level URLs (`/FDR/...`, `/Team/...`, `/Site/...`)
   working after the November 2026 cleanup. If you move a published file, add a redirect.
 - Deliverable PDFs are graded submissions. Don't edit, rename or delete them without asking.
@@ -44,7 +46,7 @@ Nolan prefers direct, colleague-to-colleague feedback: if something is wrong, sa
 ## Rest of the repo
 
 - `cad/` CAD by subsystem, `code/` software (navigation sim etc.), `datasheets/` by subsystem.
-  None of it is published.
+  None of it is published. Only `docs/` is reachable through the site.
 - Generated files (PDF drawings, STEP/GLB exports, renders) come from scripts; regenerate them
   rather than hand-editing.
 

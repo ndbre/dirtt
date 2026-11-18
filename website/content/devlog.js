@@ -20,7 +20,7 @@
            { src: "devlog/2026-09-23/chassis.glb", caption: "Model Caption" }
        ],
        links: [                             Optional. Files, docs, videos.
-           { label: "PDR Poster", href: "deliverables/PDR_Poster/2026-09-14_PDR_Poster.pdf" }
+           { label: "PDR Poster", href: "docs/PDR_Poster/2026-09-14_PDR_Poster.pdf" }
        ]
    },
 
@@ -203,7 +203,7 @@ const devlogEntries = [
             "Cara and George finalized the problem statement for submission after implementing the suggested changes from the draft."
         ],
         links: [
-            { label: "Problem Statement (PDF)", href: "deliverables/PS/2026-09-16_PS.pdf" }
+            { label: "Problem Statement (PDF)", href: "docs/PS/2026-09-16_PS.pdf" }
         ]
     },
 
@@ -216,7 +216,7 @@ const devlogEntries = [
             "Edited and finalized the PDR poster for submission."
         ],
         links: [
-            { label: "PDR Poster (PDF)", href: "deliverables/PDR_Poster/2026-09-14_PDR_Poster.pdf" }
+            { label: "PDR Poster (PDF)", href: "docs/PDR_Poster/2026-09-14_PDR_Poster.pdf" }
         ]
     },
 
@@ -229,7 +229,7 @@ const devlogEntries = [
             "Submitted the project proposal and team charter."
         ],
         links: [
-            { label: "Project Proposal and Team Charter (PDF)", href: "deliverables/PPTC/2026-09-09_PPTC.pdf" }
+            { label: "Project Proposal and Team Charter (PDF)", href: "docs/PPTC/2026-09-09_PPTC.pdf" }
         ]
     }
 ];
