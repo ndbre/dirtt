@@ -34,17 +34,20 @@
        ]
    },
 
-   If a file does not follow the naming convention, or is too big for the
-   site (Cloudflare's limit is 25 MB per file), replace that format string
-   with a spelled-out link. Big files go in the repo's docs/ folder and are
-   linked through GitHub:
+   FILES OVER 25 MB: Cloudflare won't host them, so the deploy skips them.
+   Name and place them like any other file, then list the format in onGitHub
+   so its link points at the copy on GitHub instead:
 
-       { label: "Download as PPTX",
-         href: "https://github.com/ndbre/dirtt/raw/refs/heads/master/docs/FILE.pptx" }
+       { date: "2026-11-17", formats: ["pptx", "pdf"], onGitHub: ["pptx"] },
+
+   If a file does not follow the naming convention, replace that format
+   string with a spelled-out link instead:
+
+       { date: "2026-10-01", formats: [{ label: "Download as ZIP", href: "deliverables/CDR/models.zip" }] }
 
    Working files that aren't formal deliverables (CAD, datasheets, code, test
    data, photos) go in the repo folders outside website/: cad/, code/,
-   datasheets/, docs/. Only website/ is published.
+   datasheets/. Only website/ is published.
    =========================================================================== */
 
 const deliverableGroups = [
@@ -52,10 +55,7 @@ const deliverableGroups = [
         title: "Final Design Review",
         folder: "FDR",
         versions: [
-            { date: "2026-11-17", formats: [
-                { label: "Download as PPTX", href: "https://github.com/ndbre/dirtt/raw/refs/heads/master/docs/DIRTT_FDR_2026-11-17.pptx" },
-                "pdf"
-            ] },
+            { date: "2026-11-17", formats: ["pptx", "pdf"], onGitHub: ["pptx"] },
             { date: "2026-11-15", formats: ["pptx", "pdf"] }
         ]
     },

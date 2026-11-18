@@ -23,16 +23,18 @@ Nolan prefers direct, colleague-to-colleague feedback: if something is wrong, sa
 
 ## The website (`website/`)
 
-- Live at https://dirtt.ndbre.com (Cloudflare Pages, production branch `master`, no build
-  command, output directory `website`). Every push to another branch gets a preview deployment.
-- Plain static HTML/CSS/JS, no framework, no build step. Keep it that way unless asked.
+- Live at https://dirtt.ndbre.com (Cloudflare Pages, production branch `master`, output
+  directory `website`). Every push to another branch gets a preview deployment.
+- Plain static HTML/CSS/JS, no framework. The only build step is the size filter below; keep it
+  that way unless asked.
 - Content is data in `website/content/*.js` (`devlogEntries`, `deliverableGroups`,
   `teamMembers`), rendered by `website/assets/script.js`. Home and About text is in `index.html`.
-- Deliverables: files go in `website/deliverables/<TYPE>/<YYYY-MM-DD>_<TYPE>.<ext>`, then one line
+- Deliverables: every file (any size) goes in `website/deliverables/<TYPE>/<YYYY-MM-DD>_<TYPE>.<ext>`, then one line
   in `content/deliverables.js`. The href is built from folder + date + format.
 - Devlog attachments go in `website/devlog/<YYYY-MM-DD>/`. Avoid spaces in filenames.
-- Pages rejects files over 25 MiB. Large files go in `docs/` (outside `website/`) and are linked
-  as `https://github.com/ndbre/dirtt/raw/refs/heads/master/docs/<file>`.
+- Pages rejects files over 25 MiB. Those still go in `website/deliverables/` like everything else;
+  the Pages build command (`find website -type f -size +25M -print -delete`) leaves them out of
+  the deploy, and `onGitHub: ["pptx"]` on the version in `deliverables.js` links them from GitHub.
 - `website/_redirects` keeps the old top-level URLs (`/FDR/...`, `/Team/...`, `/Site/...`)
   working after the November 2026 cleanup. If you move a published file, add a redirect.
 - Deliverable PDFs are graded submissions. Don't edit, rename or delete them without asking.
@@ -41,8 +43,8 @@ Nolan prefers direct, colleague-to-colleague feedback: if something is wrong, sa
 
 ## Rest of the repo
 
-- `cad/` CAD by subsystem, `code/` software (navigation sim etc.), `datasheets/` by subsystem,
-  `docs/` big documents. None of it is published.
+- `cad/` CAD by subsystem, `code/` software (navigation sim etc.), `datasheets/` by subsystem.
+  None of it is published.
 - Generated files (PDF drawings, STEP/GLB exports, renders) come from scripts; regenerate them
   rather than hand-editing.
 
