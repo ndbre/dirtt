@@ -18,6 +18,9 @@ It uses the same mission logic as `survey_mission.py`: GUIDED, then arrive, then
 | `nav_sim_ui.html` | The page. `nav_sim.py` serves it; you don't open it directly |
 | `dirtt_sitl.parm` | SITL parameters: 1 m arrival radius, fence, simulated LiDAR, obstacle avoidance |
 | `survey_mission.py` | **Updated.** Two bug fixes found while testing; see the bugs section below |
+| `grid_planner.py` | Field outline → ordered sample grid (the sim's **Make grid** uses it) |
+| `plot_survey.py` | Plots a survey's CSVs |
+| `server/` | Hosting the sim on the web for the team: see [`server/SETUP.md`](server/SETUP.md) |
 
 ## Run it (WSL)
 
@@ -43,6 +46,13 @@ Then open **http://localhost:8000** in your Windows browser. WSL forwards localh
 - `--host 0.0.0.0` lets you open the UI from another device on the same network.
 - `--points field1_points.csv` preloads a plan.
 - The satellite tiles (Esri World Imagery) and the map library load from the internet. Without internet, the panel still works but the map is blank.
+
+## Shared on the web
+
+`server/` runs the same sim on an always-on PC at **https://dirtt-sim.ndbre.com**: Cloudflare Access
+sign-in (email code), one driver at a time, everyone else watches. Setup and day-to-day commands are in
+[`server/SETUP.md`](server/SETUP.md). Run locally (as above) nothing changes: no sign-in, you always
+have control.
 
 ## Using it
 
