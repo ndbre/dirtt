@@ -12,7 +12,7 @@
     MDDRC10 RC +5V: leave unconnected (the Arduino is powered by USB)
 
   Power-up order (the driver captures its "stop" point from the first pulses it sees):
-    1. Wheels off the ground.  2. Plug in the Arduino (USB).  3. Open Serial Monitor at 115200,
+    1. Wheels off the ground.  2. Plug in the Arduino (USB).  3. Open Serial Monitor at 9600,
        line ending "Newline".  4. THEN switch on the 12 V to the driver.
 
   Commands (type, then Enter):
@@ -45,6 +45,7 @@ int target1 = NEUTRAL_US, target2 = NEUTRAL_US;   // where we're heading
 int out1 = NEUTRAL_US, out2 = NEUTRAL_US;         // what we're sending (ramped)
 unsigned long stopAt = 0;          // millis() at which the current move ends (0 = none)
 unsigned long lastRamp = 0;
+unsigned long lastChar = 0;
 String line;
 
 // percent (-100..100) -> pulse width
@@ -163,6 +164,7 @@ void handle(String cmd) {
   cmd.trim();
   cmd.toLowerCase();
   if (cmd.length() == 0) return;
+  Serial.print(F("> ")); Serial.println(cmd);        // echo, so you can see it arrived
   int sp = cmd.indexOf(' ');
   String word = sp < 0 ? cmd : cmd.substring(0, sp);
   String rest = sp < 0 ? "" : cmd.substring(sp + 1);
@@ -216,7 +218,7 @@ void setup() {
   rc1.writeMicroseconds(NEUTRAL_US);
   rc2.writeMicroseconds(NEUTRAL_US);
 
-  Serial.begin(115200);
+  Serial.begin(9600);       // 9600: exact on a 16 MHz AVR; 115200 is 2 % off and garbles on some clones
   Serial.println();
   Serial.println(F("D.I.R.T.T. motor test - sending STOP (1500 us) on D9/D10."));
   Serial.println(F("Wheels off the ground? Now switch on the 12 V to the MDDRC10."));
@@ -229,7 +231,10 @@ void loop() {
   updateOutputs();
   while (Serial.available()) {
     char c = Serial.read();
+    lastChar = millis();
     if (c == '\n' || c == '\r') { handle(line); line = ""; }
     else if (line.length() < 40) line += c;
   }
+  // Serial Monitor set to "No line ending": run the command once typing pauses
+  if (line.length() && millis() - lastChar > 300) { handle(line); line = ""; }
 }

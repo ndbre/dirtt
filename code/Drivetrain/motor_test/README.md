@@ -20,7 +20,7 @@ through a 15 A fuse and the power switch / E-stop to **VB+/VB−**. Mode switch 
 ## Run it
 1. Rover on blocks, wheels off the ground. Driver switch on MIX. 12 V off.
 2. Upload `motor_test.ino` (Uno, Nano or Mega; uses the built-in Servo library).
-3. Serial Monitor: **115200** baud, line ending **Newline**.
+3. Serial Monitor: **9600** baud (line ending **Newline** is best; any setting works).
 4. Switch on the 12 V. The driver captures the Arduino's 1500 µs pulse as "stop" at power-up, so
    the Arduino has to be running first.
 5. Type `test` and watch each wheel. Or drive by hand:

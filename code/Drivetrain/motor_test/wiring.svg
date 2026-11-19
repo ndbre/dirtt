@@ -126,7 +126,7 @@
 <path d="M1450,560 L1470,560 L1470,700 L1370,700" fill="none" stroke="#8a8f94" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
 <rect x="1160" y="670" width="190" height="70" rx="8" fill="#eef0f1" stroke="#8a8f94" stroke-width="2"/>
 <text x="1255" y="700" font-size="15" font-weight="bold" text-anchor="middle" fill="#1f2328">Laptop</text>
-<text x="1255" y="722" font-size="12" font-weight="normal" text-anchor="middle" fill="#555">power + Serial Monitor 115200</text>
+<text x="1255" y="722" font-size="12" font-weight="normal" text-anchor="middle" fill="#555">power + Serial Monitor 9600</text>
 <path d="M1160,420 L1070,420 L1070,432 L900,432" fill="none" stroke="#e07a00" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
 <path d="M1160,475 L1030,475 L1030,320 L900,320" fill="none" stroke="#1f6fd1" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
 <path d="M1160,530 L990,530 L990,488 L900,488" fill="none" stroke="#222222" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
@@ -146,7 +146,7 @@
 <rect x="40" y="820" width="1420" height="140" rx="6" fill="#f7f7f5" stroke="#C1C6C8" stroke-width="1.5"/>
 <text x="60" y="850" font-size="16" font-weight="bold" text-anchor="start" fill="#5D1725">Power-up order</text>
 <text x="60" y="878" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">1. Rover on blocks, wheels off the ground. Driver switch on MIX. Power switch OFF.</text>
-<text x="60" y="900" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">2. Plug the Arduino into the laptop, upload motor_test.ino, open Serial Monitor (115200, "Newline").</text>
+<text x="60" y="900" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">2. Plug the Arduino into the laptop, upload motor_test.ino, open Serial Monitor (9600 baud).</text>
 <text x="60" y="922" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">3. Switch on the 12 V. The driver takes the Arduino's 1500 µs "stop" pulse as its neutral point at power-up,</text>
 <text x="60" y="944" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">    so the Arduino must already be running. Then type  test  (or w / s / a / d, x to stop).</text>
 <text x="1440" y="948" font-size="12.5" font-weight="normal" text-anchor="end" fill="#555">Wire gauge: 16 AWG for battery and motor leads, any jumper wire for signals.</text>

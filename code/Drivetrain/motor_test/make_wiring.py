@@ -174,7 +174,7 @@ text(AX + AW - 20, AY + AH - 100, "USB", 13, "bold", "end", "#ffffff")
 wire([(AX + AW + 20, AY + AH - 70), (AX + AW + 40, AY + AH - 70), (AX + AW + 40, AY + AH + 70), (AX + AW - 60, AY + AH + 70)], GRY, 6)
 box(AX + 20, AY + AH + 40, 190, 70, "#eef0f1", "#8a8f94", 2, 8)
 text(AX + 115, AY + AH + 70, "Laptop", 15, "bold", "middle")
-text(AX + 115, AY + AH + 92, "power + Serial Monitor 115200", 12, "normal", "middle", "#555")
+text(AX + 115, AY + AH + 92, "power + Serial Monitor 9600", 12, "normal", "middle", "#555")
 
 # signal wires: D9 -> RC1, D10 -> RC2, GND -> RC GND
 wire([(AX + 20, A["D9"]), (AX - 70, A["D9"]), (AX - 70, RC["RC1"]), (RX, RC["RC1"])], SIG1, 4)
@@ -198,7 +198,7 @@ box(40, NY, W - 80, 140, "#f7f7f5", "#C1C6C8", 1.5, 6)
 text(60, NY + 30, "Power-up order", 16, "bold", fill="#5D1725")
 steps = [
     "1. Rover on blocks, wheels off the ground. Driver switch on MIX. Power switch OFF.",
-    "2. Plug the Arduino into the laptop, upload motor_test.ino, open Serial Monitor (115200, \"Newline\").",
+    "2. Plug the Arduino into the laptop, upload motor_test.ino, open Serial Monitor (9600 baud).",
     "3. Switch on the 12 V. The driver takes the Arduino's 1500 µs \"stop\" pulse as its neutral point at power-up,",
     "    so the Arduino must already be running. Then type  test  (or w / s / a / d, x to stop).",
 ]
