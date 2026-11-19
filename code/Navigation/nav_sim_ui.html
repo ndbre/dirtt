@@ -66,6 +66,13 @@ td.bad { color: var(--red); } td.good { color: var(--green); }
 .rover { width: 30px; height: 30px; }
 .homestar { font-size: 22px; line-height: 22px; text-shadow: 0 0 3px #000; }
 .leaflet-container { font: inherit; }
+.ctl { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ctl .who { font-size: 13px; color: var(--muted); }
+.ctl .who b { color: var(--text); font-weight: 600; }
+.card.you-drive { border-color: #2a8b63; background: #1b2a24; }
+.card.you-wait { border-color: #7a5418; }
+button.take { background: #1f5f9f; border-color: #2f7fd0; }
+.viewer-note { color: var(--amber); font-size: 12.5px; margin-top: 6px; }
 @media (max-width: 900px) { #app { grid-template-columns: 1fr; grid-template-rows: 55vh auto; height: auto; } #map { height: 55vh; } }
 </style>
 </head>
@@ -78,6 +85,18 @@ td.bad { color: var(--red); } td.good { color: var(--green); }
       <span id="conn" class="pill bad">SITL: waiting</span>
     </div>
     <div id="warnings"></div>
+
+    <div class="card" id="ctlcard" hidden>
+      <div class="ctl">
+        <div class="who" id="ctltext">–</div>
+        <div class="row" style="margin:0">
+          <button class="small take" id="b-take">Take control</button>
+          <button class="small" id="b-release" hidden>Hand over</button>
+          <button class="small" id="b-takeover" hidden title="Admin: take control now">Take over</button>
+        </div>
+      </div>
+      <div class="hint" id="ctlhint"></div>
+    </div>
 
     <div class="card">
       <div class="row" style="margin:0; justify-content:space-between;">
@@ -125,6 +144,10 @@ td.bad { color: var(--red); } td.good { color: var(--green); }
         <button class="small" id="b-grid">Make grid</button>
       </div>
       <div class="row">
+        <button class="small" id="b-resetall" title="Clear points, obstacles, results and GPS error">Start fresh</button>
+        <button class="small" id="b-restart" hidden title="Admin: restart the simulator (rover back to its start)">Restart SITL</button>
+      </div>
+      <div class="row">
         <button class="small" id="b-clearpts">Clear points</button>
         <button class="small" id="b-load">Load CSV</button>
         <button class="small" id="b-save">Save CSV</button>
@@ -154,7 +177,15 @@ td.bad { color: var(--red); } td.good { color: var(--green); }
 
 <script>
 const $ = (id) => document.getElementById(id);
-const post = (cmd) => fetch('/api/cmd', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(cmd)});
+let flash = '';
+const post = async (cmd) => {
+  if (S && !S.control.can_control && !['take', 'release', 'takeover'].includes(cmd.cmd)) return;
+  try {
+    const r = await fetch('/api/cmd', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(cmd)});
+    if (!r.ok) { const j = await r.json().catch(() => ({})); flash = j.error || ('error ' + r.status); }
+  } catch (e) { flash = 'could not reach the server'; }
+};
+const canCtl = () => S && S.control.can_control;
 const fmt = (v, d = 1, u = ' m') => (v === null || v === undefined) ? '–' : v.toFixed(d) + u;
 
 if (typeof L === 'undefined') {
@@ -206,7 +237,7 @@ document.querySelectorAll('#toolseg button').forEach(b => b.onclick = () => setT
 document.querySelectorAll('#speedseg button').forEach(b => b.onclick = () => post({cmd: 'speed', value: b.dataset.v}));
 
 map.on('click', (e) => {
-  if (!S) return;
+  if (!S || !canCtl()) return;
   if (tool === 'points' && S.editable) {
     const pts = S.points.map(p => ({lat: p.lat, lon: p.lon}));
     pts.push({lat: e.latlng.lat, lon: e.latlng.lng});
@@ -216,6 +247,11 @@ map.on('click', (e) => {
   }
 });
 
+$('b-take').onclick = () => post({cmd: 'take'});
+$('b-release').onclick = () => post({cmd: 'release'});
+$('b-takeover').onclick = () => post({cmd: 'takeover'});
+$('b-resetall').onclick = () => post({cmd: 'reset_all'});
+$('b-restart').onclick = () => { if (confirm('Restart the simulator? The rover goes back to its start.')) post({cmd: 'restart_sitl'}); };
 $('b-start').onclick = () => post({cmd: 'start'});
 $('b-stop').onclick = () => post({cmd: 'stop'});
 $('b-resume').onclick = () => post({cmd: 'resume'});
@@ -253,11 +289,11 @@ function statusOf(n) {
 
 function refreshPoints(force) {
   if (!S) return;
-  const sig = JSON.stringify(S.points) + tool + S.editable;
+  const sig = JSON.stringify(S.points) + tool + S.editable + canCtl();
   if (force || sig !== ptsSig) {
     ptsSig = sig;
     layers.points.clearLayers(); ptMarkers.length = 0;
-    const drag = tool === 'points' && S.editable;
+    const drag = tool === 'points' && S.editable && canCtl();
     S.points.forEach((p, i) => {
       const m = L.marker([p.lat, p.lon], {draggable: drag, icon: L.divIcon({className: '', iconSize: [24, 24], iconAnchor: [12, 12], html: `<div class="pt">${p.n}</div>`})});
       m.on('dragend', () => {
@@ -319,13 +355,21 @@ function render() {
   $('m-lidar').textContent = lid.length ? fmt(Math.min(...lid), 1) : '–';
   $('warnings').innerHTML = S.warnings.map(w => `<div class="warn">${w.replace(/</g, '&lt;')}</div>`).join('');
 
+  renderControl();
+  const C = S.control, ctl = C.can_control;
   const active = ['DRIVING', 'PROBING', 'HOMING'].includes(S.state);
-  $('b-start').disabled = !(['IDLE', 'DONE'].includes(S.state) && S.points.length);
-  $('b-stop').disabled = !active;
-  $('b-resume').disabled = !['STOPPED', 'PAUSED'].includes(S.state);
-  $('b-home').disabled = !['DRIVING', 'PROBING', 'STOPPED', 'PAUSED'].includes(S.state);
-  ['b-grid', 'b-clearpts', 'b-load'].forEach(id => $(id).disabled = !S.editable);
-  $('b-grid').disabled = !S.editable || !S.has_planner;
+  $('b-start').disabled = !ctl || !(['IDLE', 'DONE'].includes(S.state) && S.points.length);
+  $('b-stop').disabled = !ctl || !active;
+  $('b-resume').disabled = !ctl || !['STOPPED', 'PAUSED'].includes(S.state);
+  $('b-home').disabled = !ctl || !['DRIVING', 'PROBING', 'STOPPED', 'PAUSED'].includes(S.state);
+  ['b-grid', 'b-clearpts', 'b-load', 'b-resetall'].forEach(id => $(id).disabled = !ctl || !S.editable);
+  $('b-grid').disabled = !ctl || !S.editable || !S.has_planner;
+  $('b-clearobs').disabled = !ctl;
+  $('b-restart').hidden = !C.admin || C.open;
+  $('b-restart').disabled = !ctl || active;
+  ['gps', 'fastprobe', 'obr', 'g-size', 'g-sp'].forEach(id => $(id).disabled = !ctl);
+  document.querySelectorAll('#speedseg button, #toolseg button[data-v="points"], #toolseg button[data-v="obstacles"]').forEach(b => b.disabled = !ctl);
+  if (!ctl && tool !== 'pan') setTool('pan');
   document.querySelectorAll('#speedseg button').forEach(b => b.classList.toggle('on', b.dataset.v === S.speed_choice));
   if (document.activeElement !== $('gps')) { $('gps').value = S.gps_sigma; $('gpsv').textContent = S.gps_sigma + ' m'; }
   $('fastprobe').checked = S.fast_probe;
@@ -374,15 +418,53 @@ function render() {
   if (atBottom) lg.scrollTop = lg.scrollHeight;
 }
 
+function mmss(s) { s = Math.round(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function renderControl() {
+  const C = S.control, card = $('ctlcard');
+  card.hidden = C.open;                        // running locally: no driver/viewer roles
+  if (C.open) return;
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+  let text, hint = '';
+  if (C.role === 'driver') {
+    text = '<b>You are driving.</b>';
+    hint = C.line.length ? `${C.line.length} waiting · your turn ends in ${mmss(C.turn_left_s)}.` : 'Nobody is waiting.';
+    hint += ' Closing this tab hands control to the next person.';
+  } else if (C.role === 'waiting') {
+    text = `<b>You're #${C.place} in line.</b> ${C.driver ? esc(C.driver) + ' is driving.' : ''}`;
+    hint = C.turn_left_s != null && C.place === 1 ? `Your turn starts in ${mmss(C.turn_left_s)} at the latest. Keep this tab open.` : 'Keep this tab open to keep your place.';
+  } else {
+    text = C.driver ? `<b>Watching.</b> ${esc(C.driver)} is driving.` : '<b>Watching.</b> Nobody is driving.';
+    hint = C.driver ? 'Take control to get in line.' : 'Take control to drive.';
+  }
+  hint += ` · ${C.watching} here now`;
+  if (flash) { hint = '⚠ ' + flash + ' · ' + hint; }
+  $('ctltext').innerHTML = text;
+  $('ctlhint').textContent = hint;
+  card.classList.toggle('you-drive', C.role === 'driver');
+  card.classList.toggle('you-wait', C.role === 'waiting');
+  $('b-take').hidden = C.role !== 'viewer';
+  $('b-take').textContent = C.driver ? 'Get in line' : 'Take control';
+  $('b-release').hidden = C.role === 'viewer';
+  $('b-release').textContent = C.role === 'driver' ? 'Hand over' : 'Leave line';
+  $('b-takeover').hidden = !(C.admin && C.role !== 'driver' && C.driver);
+}
+
+let fails = 0;
 async function poll() {
   try {
-    const r = await fetch('/api/state?since=' + trackLen);
+    const r = await fetch('/api/state?since=' + trackLen, {credentials: 'same-origin'});
+    if (r.status === 401) throw new Error('signed out');
     S = await r.json();
+    fails = 0;
     render();
+    if (flash) setTimeout(() => { flash = ''; }, 4000);
   } catch (e) {
-    $('conn').textContent = 'nav_sim.py not running'; $('conn').className = 'pill bad';
+    fails++;
+    $('conn').textContent = fails > 8 ? 'Lost the server (reload the page; your sign-in may have expired)' : 'reconnecting…';
+    $('conn').className = 'pill bad';
   }
-  setTimeout(poll, 250);
+  const driving = S && S.control && S.control.role !== 'viewer';
+  setTimeout(poll, driving ? 250 : 500);
 }
 setTool('pan');
 poll();

@@ -21,10 +21,16 @@ plus the things only a simulator can show:
 
 Moving to the real rover: the mission logic is the same; use survey_mission.py with
 --connect /dev/serial0. The GPS-error and obstacle tools only exist in simulation.
+
+Shared on the web (dirtt-sim.ndbre.com, see server/SETUP.md): run with --auth access. Everyone
+signs in through Cloudflare Access; one person drives at a time, everyone else watches. The page
+polls /api/state several times a second, and that doubles as the driver's heartbeat: close the tab
+and control passes to the next person in line after --driver-timeout seconds.
 """
-import argparse, collections, csv, json, math, os, queue, random, sys, threading, time
+import argparse, collections, csv, glob, json, math, os, queue, random, subprocess, sys, threading, time
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.cookies import SimpleCookie
 from urllib.parse import urlparse, parse_qs
 
 from pymavlink import mavutil
@@ -47,7 +53,11 @@ GPS_TAU_S = 45.0                           # GPS error correlation time (how slo
 SPEEDS = {"real": 0.6, "fast": 2.0}
 # SITL's GPS glitch offset (degrees) was renamed when the GPS sim parameters moved into groups:
 # ArduPilot 4.6 and earlier: SIM_GPS_GLITCH_X/Y/Z   ArduPilot 4.7 / master: SIM_GPS1_GLTCH_X/Y/Z
-GLITCH_NAMES = ("SIM_GPS_GLITCH", "SIM_GPS1_GLTCH")        # m/s. Real: 83 RPM x 0.19 m wheel = 0.83 m/s no-load
+GLITCH_NAMES = ("SIM_GPS_GLITCH", "SIM_GPS1_GLTCH")
+# Limits, so one visitor can't bog the shared sim down
+MAX_POINTS = 150
+MAX_OBSTACLES = 25
+KEEP_LOG_FILES = 300                       # newest survey CSVs kept in --logs        # m/s. Real: 83 RPM x 0.19 m wheel = 0.83 m/s no-load
 
 # Parameters the simulation needs. (value, needs reboot, why)
 WANT = {
@@ -142,6 +152,8 @@ class Sim:
         # logs
         self.samples_w = self.track_w = None
         self.stamp = None
+        self.reinit_needed = False  # SITL restarted under us: re-request streams, params, fence
+        self.restart_cmd = None    # shell command that restarts SITL (server mode)
 
     # ------------------------------------------------------------ logging / snapshot
     def log(self, msg):
@@ -271,11 +283,72 @@ class Sim:
                 if needs_reboot:
                     self.set_param(name, val)       # saved now, active after the restart
 
+    def reinit(self):
+        """SITL came back (crashed and restarted, or someone restarted it): the mission is gone,
+        the fence and the GPS error are cleared, and the rover is back at its start."""
+        self.reinit_needed = False
+        self.log("SITL restarted: re-reading parameters and re-uploading the fence")
+        if self.state in ("DRIVING", "PROBING", "HOMING", "STOPPED", "PAUSED"):
+            self.log("  the survey in progress was cancelled")
+            self.close_logs()
+        self.params.clear()
+        self.lidar = {}
+        names = list(WANT) + ["WP_SPEED"] + [g + "_X" for g in GLITCH_NAMES]
+        for _ in range(3):
+            for name in names:
+                if name not in self.params:
+                    self.m.mav.param_request_read_send(self.m.target_system, self.m.target_component,
+                                                       name.encode(), -1)
+            end = now_s() + 2
+            while now_s() < end:
+                self.pump(0.2)
+            if all(n in self.params for n in WANT):
+                break
+        self.check_params()
+        self.gps_err = [0.0, 0.0]
+        self.push_gps_error(0.0, 0.0)
+        self.set_speed(self.speed_choice)
+        self.fence_dirty = True
+        with self.lock:
+            self.home = self.est
+            self.state, self.detail = "IDLE", "SITL restarted - ready"
+
     def set_param(self, name, value):
         self.m.mav.param_set_send(self.m.target_system, self.m.target_component, name.encode(),
                                   float(value), mavutil.mavlink.MAV_PARAM_TYPE_REAL32)
 
+    def link_lost(self, err):
+        """SITL went away (restarted or crashed): reconnect, then reinit() on the next loop."""
+        self.connected = False
+        self.log(f"Lost the link to SITL ({err}) - reconnecting")
+        with self.lock:
+            self.detail = "Simulator restarting - reconnecting"
+        while True:
+            try:
+                try:
+                    self.m.close()
+                except Exception:                   # noqa: BLE001
+                    pass
+                self.m = mavutil.mavlink_connection(self.conn_str, baud=self.baud, source_system=1,
+                                                    source_component=191, autoreconnect=True)
+                if self.m.wait_heartbeat(timeout=5) is not None:
+                    break
+            except OSError:
+                pass
+            time.sleep(2)
+        self.connected, self.last_hb = True, now_s()
+        self.log(f"Reconnected to system {self.m.target_system}")
+        self.request_streams()
+        if self.state != "CONNECTING":
+            self.reinit_needed = True
+
     def pump(self, wait=0.1):
+        try:
+            self._pump(wait)
+        except OSError as e:
+            self.link_lost(e)
+
+    def _pump(self, wait):
         now = now_s()
         if now >= self.next_hb:
             self.m.mav.heartbeat_send(mavutil.mavlink.MAV_TYPE_ONBOARD_CONTROLLER,
@@ -332,6 +405,8 @@ class Sim:
                 self.connected = True
                 self.log("SITL heartbeat back")
                 self.request_streams()
+                if self.state != "CONNECTING":
+                    self.reinit_needed = True
         elif t == "PARAM_VALUE":
             self.params[msg.param_id] = msg.param_value
         elif t == "COMMAND_ACK":
@@ -486,6 +561,9 @@ class Sim:
         self.field = [offset_ll(lat0, lon0, x, y) for x, y in ((x0, y0), (x0, y1), (x1, y1), (x1, y0))]
 
     def set_points(self, pts, field=None):
+        if len(pts) > MAX_POINTS:
+            self.log(f"Too many points ({len(pts)}); the limit is {MAX_POINTS}")
+            return
         with self.lock:
             self.points = [{"n": i + 1, "lat": float(p["lat"]), "lon": float(p["lon"])}
                            for i, p in enumerate(pts)]
@@ -515,7 +593,16 @@ class Sim:
         self.log(f"Grid: {len(pts)} points in {rows} rows, {spacing:g} m apart, {path:.0f} m of driving")
 
     # ------------------------------------------------------------ mission
+    def prune_logs(self):
+        files = sorted(glob.glob(os.path.join(self.out_dir, "survey_*.csv")), key=os.path.getmtime)
+        for f in files[:-KEEP_LOG_FILES]:
+            try:
+                os.remove(f)
+            except OSError:
+                pass
+
     def open_logs(self):
+        self.prune_logs()
         self.stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         sf = open(os.path.join(self.out_dir, f"survey_{self.stamp}_samples.csv"), "w", newline="")
         tf = open(os.path.join(self.out_dir, f"survey_{self.stamp}_track.csv"), "w", newline="")
@@ -759,11 +846,29 @@ class Sim:
             if self.state in ("DRIVING", "PROBING", "STOPPED", "PAUSED"):
                 self.come_home()
         elif name == "set_points" and self.state in ("IDLE", "DONE"):
-            self.set_points(c.get("points", []))
+            pts = [{"lat": float(p["lat"]), "lon": float(p["lon"])} for p in c.get("points", [])[:MAX_POINTS + 1]]
+            ref = self.true or self.est
+            if ref and any(dist_m(p["lat"], p["lon"], *ref) > 2000 for p in pts):
+                self.log("Points must be within 2 km of the rover")
+                return
+            self.set_points(pts)
         elif name == "grid" and self.state in ("IDLE", "DONE"):
-            self.make_grid(float(c.get("size", 60)), float(c.get("spacing", 15)), float(c.get("margin", 4)))
+            size = min(300.0, max(10.0, float(c.get("size", 60))))
+            spacing = min(100.0, max(3.0, float(c.get("spacing", 15))))
+            margin = min(20.0, max(0.0, float(c.get("margin", 4))))
+            if (size / spacing + 1) ** 2 > MAX_POINTS * 1.5:
+                self.log(f"That grid is too dense (limit about {MAX_POINTS} points)")
+                return
+            self.make_grid(size, spacing, margin)
         elif name == "add_obstacle":
-            lat, lon, r = float(c["lat"]), float(c["lon"]), float(c.get("r", 1.0))
+            lat, lon = float(c["lat"]), float(c["lon"])
+            r = min(10.0, max(0.3, float(c.get("r", 1.0))))
+            if len(self.obstacles) >= MAX_OBSTACLES:
+                self.log(f"Obstacle limit reached ({MAX_OBSTACLES})")
+                return
+            if self.true and dist_m(lat, lon, *self.true) > 2000:
+                self.log("Obstacle too far from the rover")
+                return
             if self.true and dist_m(lat, lon, *self.true) < r + 1.0:
                 self.log("Not placing an obstacle on top of the rover")
                 return
@@ -794,6 +899,25 @@ class Sim:
                 self.results, self.track = [], []
             self.home = self.est
             self.go("IDLE", "Ready")
+        elif name == "reset_all" and self.state in ("IDLE", "DONE"):
+            # fresh start for the next driver: no points, obstacles, results, GPS error
+            with self.lock:
+                self.results, self.track, self.obstacles = [], [], []
+                self.points = []
+            self.field, self.fence_dirty = [], True
+            self.gps_sigma = 0.0
+            self.home = self.est
+            self.upload_fence()
+            self.go("IDLE", "Cleared - add sample points, then press Start")
+            self.log("Cleared points, obstacles, results and GPS error")
+        elif name == "restart_sitl":
+            if not self.restart_cmd:
+                self.log("Restarting SITL is not set up on this server")
+            elif self.state in ("DRIVING", "PROBING", "HOMING"):
+                self.log("STOP or finish the survey before restarting SITL")
+            else:
+                self.log("Restarting SITL (rover goes back to its start) ...")
+                subprocess.Popen(self.restart_cmd, shell=True)
 
     def run(self):
         try:
@@ -805,9 +929,15 @@ class Sim:
                         self.handle_cmd(self.cmds.get_nowait())
                     except Exception as e:     # noqa: BLE001 - keep the sim alive, report it
                         self.log(f"Command error: {e!r}")
-                if self.fence_dirty and self.field and self.state not in ("CONNECTING",):
-                    self.upload_fence()
-                self.gps_tick()
+                try:
+                    if self.reinit_needed and self.connected:
+                        self.reinit()
+                    if self.fence_dirty and self.field and self.state not in ("CONNECTING",):
+                        self.upload_fence()
+                    self.gps_tick()
+                except Exception as e:         # noqa: BLE001 - keep the sim alive, report it
+                    self.fence_dirty = False
+                    self.log(f"Housekeeping error: {e!r}")
                 if self.est and self.true:
                     try:
                         self.step()
@@ -842,9 +972,149 @@ def simulated_probe(n):
             "moisture_pct": round(min(60, max(5, random.gauss(28, 4))), 1)}
 
 
+# ---------------------------------------------------------------- who is driving
+class Control:
+    """One driver at a time. Everyone else watches; "Take control" joins the line.
+
+    Every page poll (several per second) counts as a heartbeat. A driver whose page goes quiet for
+    `timeout` seconds (closed the tab, lost connection) loses control to the next person in line.
+    If people are waiting, a driver also hands over after `turn_s` seconds. Admins can take over.
+    With auth "none" (running locally) there is a single user who always has control."""
+
+    VIEWER_GONE_S = 30.0
+
+    def __init__(self, log, admins=(), timeout=10.0, turn_s=900.0, open_mode=False):
+        self.log = log
+        self.admins = {a.strip().lower() for a in admins if a.strip()}
+        self.timeout, self.turn_s, self.open_mode = timeout, turn_s, open_mode
+        self.lock = threading.Lock()
+        self.driver, self.driver_since = None, 0.0
+        self.line = []                 # emails waiting, in order
+        self.seen = {}                 # email -> last poll time
+
+    def _tidy(self):
+        t = now_s()
+        for who, ts in list(self.seen.items()):
+            if t - ts > self.VIEWER_GONE_S:
+                del self.seen[who]
+        self.line = [w for w in self.line if t - self.seen.get(w, 0) <= self.timeout]
+        if self.driver and t - self.seen.get(self.driver, 0) > self.timeout:
+            self._hand_over(f"{self.driver} left")
+        elif self.driver and self.line and t - self.driver_since > self.turn_s:
+            self._hand_over(f"{self.driver}'s turn is up")
+        if not self.driver and self.line:
+            self._hand_over(None)
+
+    def _hand_over(self, why):
+        prev = self.driver
+        self.driver = self.line.pop(0) if self.line else None
+        self.driver_since = now_s()
+        msg = f"Control: {why}. " if why else "Control: "
+        self.log(msg + (f"{self.driver} is driving" if self.driver else "nobody is driving"))
+        return prev
+
+    def touch(self, who):
+        with self.lock:
+            self.seen[who] = now_s()
+            self._tidy()
+
+    def can_drive(self, who):
+        if self.open_mode:
+            return True
+        with self.lock:
+            self._tidy()
+            return who == self.driver
+
+    def command(self, who, name):
+        if self.open_mode:
+            return
+        with self.lock:
+            self.seen[who] = now_s()
+            self._tidy()
+            if name == "take":
+                if self.driver is None:
+                    self.driver, self.driver_since = who, now_s()
+                    self.log(f"Control: {who} is driving")
+                elif who != self.driver and who not in self.line:
+                    self.line.append(who)
+                    self.log(f"Control: {who} is waiting (#{len(self.line)} in line)")
+            elif name == "release":
+                if who == self.driver:
+                    self._hand_over(f"{who} handed over")
+                elif who in self.line:
+                    self.line.remove(who)
+            elif name == "takeover" and who in self.admins and who != self.driver:
+                if who in self.line:
+                    self.line.remove(who)
+                if self.driver:
+                    self.line.insert(0, self.driver)
+                self.log(f"Control: {who} (admin) took over from {self.driver or 'nobody'}")
+                self.driver, self.driver_since = who, now_s()
+
+    def info(self, who):
+        if self.open_mode:
+            return {"you": who, "role": "driver", "can_control": True, "open": True,
+                    "driver": who, "line": [], "watching": 1, "turn_left_s": None, "admin": True}
+        with self.lock:
+            self._tidy()
+            role = ("driver" if who == self.driver else
+                    "waiting" if who in self.line else "viewer")
+            left = (max(0.0, self.turn_s - (now_s() - self.driver_since))
+                    if self.driver and self.line else None)
+            return {"you": who, "role": role, "can_control": role == "driver", "open": False,
+                    "driver": self.driver, "line": list(self.line),
+                    "place": self.line.index(who) + 1 if who in self.line else None,
+                    "watching": len(self.seen), "turn_left_s": left,
+                    "admin": who in self.admins, "timeout_s": self.timeout}
+
+
+class AccessVerifier:
+    """Checks the Cloudflare Access token on each request (Cf-Access-Jwt-Assertion header or the
+    CF_Authorization cookie) and returns the signed-in email. Needs: pip install "pyjwt[crypto]"."""
+
+    def __init__(self, team, aud, certs_url=None):
+        import jwt                                   # noqa: PLC0415 - only needed in this mode
+        self.jwt = jwt
+        self.aud = aud
+        self.issuer = f"https://{team}.cloudflareaccess.com"
+        self.keys = jwt.PyJWKClient(certs_url or self.issuer + "/cdn-cgi/access/certs",
+                                    cache_keys=True, lifespan=3600)
+
+    def email(self, token):
+        if not token:
+            return None
+        try:
+            key = self.keys.get_signing_key_from_jwt(token).key
+            claims = self.jwt.decode(token, key, algorithms=["RS256"], audience=self.aud,
+                                     issuer=self.issuer, options={"require": ["exp", "aud", "iss"]})
+        except Exception:                            # noqa: BLE001 - any failure = not signed in
+            return None
+        email = claims.get("email")
+        return email.lower() if email else None
+
+
 # ---------------------------------------------------------------- web server
-def make_handler(sim):
+def _no_nan(name):
+    raise ValueError(f"{name} not allowed")
+
+
+SIM_CMDS = {"start", "stop", "resume", "come_home", "set_points", "grid", "add_obstacle",
+            "remove_obstacle", "clear_obstacles", "gps_error", "fast_probe", "speed", "reset",
+            "reset_all", "restart_sitl"}
+ADMIN_CMDS = {"restart_sitl"}
+
+
+def make_handler(sim, control, auth, verifier=None, rate=10.0):
     page_path = os.path.join(HERE, "nav_sim_ui.html")
+    buckets = {}                                     # email -> [tokens, last time]
+
+    def allowed(who):
+        t = now_s()
+        tok, last = buckets.get(who, [rate * 2, t])
+        tok = min(rate * 2, tok + (t - last) * rate)
+        ok = tok >= 1
+        buckets[who] = [tok - 1 if ok else tok, t]
+        return ok
 
     class H(BaseHTTPRequestHandler):
         def log_message(self, *a):
@@ -859,14 +1129,39 @@ def make_handler(sim):
             self.end_headers()
             self.wfile.write(data)
 
+        def who(self):
+            if auth == "none":
+                return "local"
+            if auth == "header":                     # trust Cloudflare's header (testing only)
+                e = self.headers.get("Cf-Access-Authenticated-User-Email")
+                return e.strip().lower() if e else None
+            token = self.headers.get("Cf-Access-Jwt-Assertion")
+            if not token and self.headers.get("Cookie"):
+                c = SimpleCookie()
+                try:
+                    c.load(self.headers["Cookie"])
+                except Exception:                    # noqa: BLE001
+                    pass
+                token = c["CF_Authorization"].value if "CF_Authorization" in c else None
+            return verifier.email(token)
+
         def do_GET(self):
             u = urlparse(self.path)
+            who = self.who()
+            if who is None:
+                return self.send(401, '{"error":"not signed in"}')
             if u.path in ("/", "/index.html"):
                 with open(page_path, "rb") as f:
                     self.send(200, f.read(), "text/html; charset=utf-8")
             elif u.path == "/api/state":
-                since = int(parse_qs(u.query).get("since", ["0"])[0])
-                self.send(200, json.dumps(sim.snapshot(since)))
+                try:
+                    since = max(0, int(parse_qs(u.query).get("since", ["0"])[0]))
+                except ValueError:
+                    since = 0
+                control.touch(who)
+                snap = sim.snapshot(since)
+                snap["control"] = control.info(who)
+                self.send(200, json.dumps(snap))
             elif u.path == "/api/points.csv":
                 rows = ["n,lat,lon"] + [f"{p['n']},{p['lat']:.7f},{p['lon']:.7f}" for p in sim.points]
                 self.send(200, "\n".join(rows) + "\n", "text/csv")
@@ -876,11 +1171,33 @@ def make_handler(sim):
         def do_POST(self):
             if urlparse(self.path).path != "/api/cmd":
                 return self.send(404, '{"error":"not found"}')
-            n = int(self.headers.get("Content-Length", 0))
+            who = self.who()
+            if who is None:
+                return self.send(401, '{"error":"not signed in"}')
             try:
-                c = json.loads(self.rfile.read(n) or b"{}")
+                n = int(self.headers.get("Content-Length", 0))
+            except ValueError:
+                n = 0
+            if n > 200_000:
+                return self.send(413, '{"error":"too big"}')
+            try:
+                c = json.loads(self.rfile.read(n) or b"{}", parse_constant=_no_nan)
             except ValueError:
                 return self.send(400, '{"error":"bad json"}')
+            if not isinstance(c, dict):
+                return self.send(400, '{"error":"bad command"}')
+            if not allowed(who):
+                return self.send(429, '{"error":"slow down"}')
+            name = c.get("cmd")
+            if name in ("take", "release", "takeover"):
+                control.command(who, name)
+                return self.send(200, '{"ok":true}')
+            if name not in SIM_CMDS:
+                return self.send(400, '{"error":"unknown command"}')
+            if name in ADMIN_CMDS and auth != "none" and not control.info(who)["admin"]:
+                return self.send(403, '{"error":"admins only"}')
+            if not control.can_drive(who):
+                return self.send(403, '{"error":"you are not driving"}')
             sim.cmds.put(c)
             self.send(200, '{"ok":true}')
 
@@ -896,16 +1213,42 @@ def main(argv=None):
     ap.add_argument("--host", default="127.0.0.1", help="0.0.0.0 to open the UI from another device")
     ap.add_argument("--points", help="optional <out>_points.csv from grid_planner.py to load at start")
     ap.add_argument("--logs", default="runs", help="folder for the survey CSVs (default ./runs)")
+    g = ap.add_argument_group("shared web server (see server/SETUP.md)")
+    g.add_argument("--auth", choices=("none", "access", "header"), default="none",
+                   help="none: local, one user (default). access: Cloudflare Access sign-in, one driver "
+                        "at a time. header: like access but trusts the email header (testing only)")
+    g.add_argument("--access-team", help="Cloudflare Zero Trust team name (<team>.cloudflareaccess.com)")
+    g.add_argument("--access-aud", help="the Access application's Audience (AUD) tag")
+    g.add_argument("--access-certs-url", help=argparse.SUPPRESS)          # tests
+    g.add_argument("--admins", default="", help="comma-separated emails that can take over and restart SITL")
+    g.add_argument("--driver-timeout", type=float, default=10.0, help="seconds without a poll before the driver loses control")
+    g.add_argument("--turn-minutes", type=float, default=15.0, help="driving turn length when someone is waiting")
+    g.add_argument("--restart-cmd", help="shell command that restarts SITL (e.g. 'pkill -x ardurover' when a supervisor restarts it)")
     a = ap.parse_args(argv)
 
+    verifier = None
+    if a.auth == "access":
+        if not (a.access_team and a.access_aud):
+            ap.error("--auth access needs --access-team and --access-aud")
+        try:
+            verifier = AccessVerifier(a.access_team, a.access_aud, a.access_certs_url)
+        except ImportError:
+            ap.error('--auth access needs PyJWT: pip install "pyjwt[crypto]"')
+    if a.auth == "header" and a.host not in ("127.0.0.1", "localhost"):
+        print("WARNING: --auth header trusts a header anyone can send; keep --host 127.0.0.1", flush=True)
+
     sim = Sim(a.connect, a.baud, a.logs)
+    sim.restart_cmd = a.restart_cmd
+    control = Control(sim.log, a.admins.split(","), a.driver_timeout, a.turn_minutes * 60,
+                      open_mode=(a.auth == "none"))
     if a.points:
         with open(a.points) as f:
             pts = [{"lat": float(r["lat"]), "lon": float(r["lon"])} for r in csv.DictReader(f)]
         sim.cmds.put({"cmd": "set_points", "points": pts})
-    srv = ThreadingHTTPServer((a.host, a.port), make_handler(sim))
+    srv = ThreadingHTTPServer((a.host, a.port), make_handler(sim, control, a.auth, verifier))
+    srv.daemon_threads = True
     threading.Thread(target=srv.serve_forever, daemon=True).start()
-    print(f"UI: http://localhost:{a.port}   (Ctrl+C to quit)", flush=True)
+    print(f"UI: http://localhost:{a.port}   (auth: {a.auth})   (Ctrl+C to quit)", flush=True)
     try:
         sim.run()
     except KeyboardInterrupt:
