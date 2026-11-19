@@ -50,13 +50,15 @@ FENCE_PAD_M = 8.0                          # field boundary = points + home, pad
 PROBE_REAL = (("settle", 2.0), ("probe down", 15.0), ("reading sensor", 5.0), ("probe up", 15.0))
 PROBE_FAST = (("settle", 1.0), ("probe down", 2.0), ("reading sensor", 1.0), ("probe up", 2.0))
 GPS_TAU_S = 45.0                           # GPS error correlation time (how slowly it wanders)
-SPEEDS = {"real": 0.6, "fast": 2.0}
+SPEEDS = {"real": 0.6, "fast": 2.0}         # presets (m/s); any value in SPEED_RANGE works
+SPEED_RANGE = (0.2, 3.0)                   # SITL skid-steer model is tuned for ~3 m/s
 # SITL's GPS glitch offset (degrees) was renamed when the GPS sim parameters moved into groups:
 # ArduPilot 4.6 and earlier: SIM_GPS_GLITCH_X/Y/Z   ArduPilot 4.7 / master: SIM_GPS1_GLTCH_X/Y/Z
 GLITCH_NAMES = ("SIM_GPS_GLITCH", "SIM_GPS1_GLTCH")
 # Limits, so one visitor can't bog the shared sim down
 MAX_POINTS = 150
 MAX_OBSTACLES = 25
+MAX_CORNERS = 20
 KEEP_LOG_FILES = 300                       # newest survey CSVs kept in --logs        # m/s. Real: 83 RPM x 0.19 m wheel = 0.83 m/s no-load
 
 # Parameters the simulation needs. (value, needs reboot, why)
@@ -79,6 +81,34 @@ def dist_m(lat1, lon1, lat2, lon2):
     dp, dl = p2 - p1, math.radians(lon2 - lon1)
     a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
     return 2 * 6371000 * math.asin(math.sqrt(min(1.0, a)))
+
+
+def pad_polygon(corners, pad):
+    """Grow a lat/lon polygon outward by `pad` metres (mitred corners, capped at 3x pad).
+
+    The geofence gets the field outline plus this pad: SITL's simulated LiDAR sees the fence as a
+    wall, so points near an exact outline get skipped. The real LiDAR doesn't see field edges."""
+    lat0, lon0 = corners[0]
+    k = math.cos(math.radians(lat0))
+    xy = [(math.radians(lo - lon0) * R_EARTH * k, math.radians(la - lat0) * R_EARTH) for la, lo in corners]
+    n = len(xy)
+    area2 = sum(xy[i - 1][0] * xy[i][1] - xy[i][0] * xy[i - 1][1] for i in range(n))
+    sgn = 1.0 if area2 > 0 else -1.0                 # counter-clockwise: outward normal is to the right
+    out = []
+    for i in range(n):
+        (ax, ay), (bx, by), (cx, cy) = xy[i - 1], xy[i], xy[(i + 1) % n]
+        normals = []
+        for (x1, y1), (x2, y2) in (((ax, ay), (bx, by)), ((bx, by), (cx, cy))):
+            L = math.hypot(x2 - x1, y2 - y1) or 1.0
+            normals.append((sgn * (y2 - y1) / L, -sgn * (x2 - x1) / L))
+        (n1x, n1y), (n2x, n2y) = normals
+        d = 1.0 + n1x * n2x + n1y * n2y
+        mx, my = (n1x + n2x) / max(d, 1e-6), (n1y + n2y) / max(d, 1e-6)
+        m = math.hypot(mx, my)
+        if m > 3.0:
+            mx, my = mx * 3.0 / m, my * 3.0 / m
+        out.append((bx + pad * mx, by + pad * my))
+    return [(lat0 + math.degrees(y / R_EARTH), lon0 + math.degrees(x / (R_EARTH * k))) for x, y in out]
 
 
 def offset_ll(lat, lon, east_m, north_m):
@@ -135,7 +165,7 @@ class Sim:
         self.home_after_probe = False  # COME HOME arrived mid-test: retract, then RTL
         self.hold_reason = ""
         self.probe_steps = PROBE_FAST
-        self.speed_choice = "fast"
+        self.wp_speed = SPEEDS["fast"]  # WP_SPEED (m/s) we ask for; self.speed is the measured one
         self.results = []
         self.log_lines = collections.deque(maxlen=200)
         self.track = []            # [(t, est_lat, est_lon, true_lat, true_lon)]
@@ -154,6 +184,8 @@ class Sim:
         self.stamp = None
         self.reinit_needed = False  # SITL restarted under us: re-request streams, params, fence
         self.restart_cmd = None    # shell command that restarts SITL (server mode)
+        self.home_file = None      # file start_sim.sh reads the SITL start location from
+        self.corners = []          # field outline drawn by the user, for "Make grid": [(lat, lon)]
 
     # ------------------------------------------------------------ logging / snapshot
     def log(self, msg):
@@ -180,7 +212,8 @@ class Sim:
                 "target": p, "d_est": d_est, "d_true": d_true, "gps_offset": gps_off,
                 "arrive_m": self.arrive_m, "wp_radius": self.params.get("WP_RADIUS"),
                 "gps_sigma": self.gps_sigma, "fast_probe": self.probe_steps is PROBE_FAST,
-                "speed_choice": self.speed_choice,
+                "speed_set": self.wp_speed, "speed_range": SPEED_RANGE,
+                "corners": self.corners, "can_move_start": bool(self.home_file and self.restart_cmd),
                 "results": self.results, "log": list(self.log_lines)[-80:],
                 "track_from": since, "track": self.track[since:], "track_len": len(self.track),
                 "lidar": self.lidar, "warnings": self.warnings, "fence_status": self.fence_status,
@@ -235,7 +268,7 @@ class Sim:
         else:
             self.log(f"GPS error is injected through {self.glitch_param}_X/Y")
             self.push_gps_error(0.0, 0.0)
-        self.set_speed(self.speed_choice)
+        self.set_speed(self.wp_speed)
         with self.lock:
             self.home = self.est
             self.state, self.detail = "IDLE", "Add sample points, then press Start"
@@ -307,8 +340,12 @@ class Sim:
         self.check_params()
         self.gps_err = [0.0, 0.0]
         self.push_gps_error(0.0, 0.0)
-        self.set_speed(self.speed_choice)
+        self.set_speed(self.wp_speed)
         self.fence_dirty = True
+        t0 = now_s()                     # wait for a position from the (possibly moved) rover
+        self.est = self.true = None
+        while (self.est is None or self.true is None) and now_s() - t0 < 30:
+            self.pump(0.2)
         with self.lock:
             self.home = self.est
             self.state, self.detail = "IDLE", "SITL restarted - ready"
@@ -479,10 +516,12 @@ class Sim:
             mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, POS_MASK,
             int(lat * 1e7), int(lon * 1e7), 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-    def set_speed(self, choice):
-        self.speed_choice = choice
-        self.set_param("WP_SPEED", SPEEDS[choice])
-        self.log(f"Drive speed {SPEEDS[choice]} m/s ({choice})")
+    def set_speed(self, value):
+        if isinstance(value, str):
+            value = SPEEDS.get(value, self.wp_speed)
+        self.wp_speed = round(min(SPEED_RANGE[1], max(SPEED_RANGE[0], float(value))), 2)
+        self.set_param("WP_SPEED", self.wp_speed)
+        self.log(f"Drive speed {self.wp_speed:g} m/s")
 
     def upload_fence(self):
         """Field edge as an inclusion polygon + every obstacle as an exclusion circle."""
@@ -550,6 +589,10 @@ class Sim:
         pts = [(p["lat"], p["lon"]) for p in self.points]
         if self.home:
             pts.append(self.home)
+        if len(self.corners) >= 3:      # the user's outline (padded), if the points and the start are inside it
+            self.field = pad_polygon(self.corners, FENCE_PAD_M)
+            if all(self.field_contains(ll) for ll in pts):
+                return                  # otherwise fall through to a box around everything
         if not pts:
             self.field = []
             return
@@ -581,15 +624,18 @@ class Sim:
         if not self.est:
             return
         lat, lon = self.home or self.est
-        o = -10.0                        # rover starts 10 m inside the SW corner: room to turn, and the
+        if len(self.corners) >= 3:       # the user's field outline
+            corners = list(self.corners)
+        else:
+            o = -10.0                    # rover starts 10 m inside the SW corner: room to turn, and the
                                          # first point is not right next to it (rovers circle tight targets)
-        corners = [offset_ll(lat, lon, x, y) for x, y in ((o, o), (o, o + size), (o + size, o + size), (o + size, o))]
+            corners = [offset_ll(lat, lon, x, y) for x, y in ((o, o), (o, o + size), (o + size, o + size), (o + size, o))]
         try:
             pts, path, _, rows = grid_planner.plan(corners, spacing, margin, (lat, lon))
         except SystemExit as e:
             self.log(f"Grid planner: {e}")
             return
-        self.set_points([{"lat": a, "lon": b} for a, b in pts], field=corners)
+        self.set_points([{"lat": a, "lon": b} for a, b in pts], field=pad_polygon(corners, FENCE_PAD_M))
         self.log(f"Grid: {len(pts)} points in {rows} rows, {spacing:g} m apart, {path:.0f} m of driving")
 
     # ------------------------------------------------------------ mission
@@ -655,7 +701,7 @@ class Sim:
     def start_leg(self):
         p = self.points[self.idx]
         d0 = dist_m(*self.est, p["lat"], p["lon"])
-        v = max(0.3, SPEEDS[self.speed_choice])
+        v = max(0.3, self.wp_speed)
         self.limit = 30 + 3 * d0 / v
         self.t_leg, self.next_send, self.sends_left = now_s(), 0.0, 3
         self.go("DRIVING", f"Point {p['n']}/{len(self.points)}")
@@ -670,7 +716,7 @@ class Sim:
         with self.lock:
             self.results, self.track = [], []
         self.home = self.est
-        if not self.field_contains(self.home):
+        if not (self.field_contains(self.home) and all(self.field_contains((p["lat"], p["lon"])) for p in self.points)):
             self.make_field()
         if not self.upload_fence():
             self.log("Could not upload the fence; starting anyway (no obstacle avoidance)")
@@ -830,6 +876,36 @@ class Sim:
             self.log("Back in GUIDED - resuming")
             self.start_leg()
 
+    def move_start(self, c):
+        """Move the rover's start (SITL's home): write it where start_sim.sh reads it and restart SITL."""
+        if not (self.home_file and self.restart_cmd):
+            self.log("Moving the start needs the server setup (start_sim.sh). Locally: restart "
+                     "sim_vehicle.py with --custom-location=LAT,LON,100,0")
+            return
+        if self.state not in ("IDLE", "DONE"):
+            self.log("Finish or stop the survey before moving the start")
+            return
+        if c.get("default"):
+            try:
+                os.remove(self.home_file)
+            except FileNotFoundError:
+                pass
+            where = "the default location"
+        else:
+            lat, lon = float(c["lat"]), float(c["lon"])
+            if not (-85 <= lat <= 85 and -180 <= lon <= 180):
+                self.log("That start location is off the map")
+                return
+            hdg = float(c.get("heading", 0)) % 360
+            with open(self.home_file, "w") as f:
+                f.write(f"{lat:.7f},{lon:.7f},100,{hdg:.0f}\n")
+            where = f"{lat:.6f}, {lon:.6f}"
+        with self.lock:                  # the old points/obstacles/field are somewhere else now
+            self.points, self.obstacles, self.corners, self.field = [], [], [], []
+            self.results, self.track = [], []
+        self.log(f"Moving the start to {where}: restarting SITL (about 40 s)")
+        subprocess.Popen(self.restart_cmd, shell=True)
+
     # ------------------------------------------------------------ UI commands
     def handle_cmd(self, c):
         name = c.get("cmd")
@@ -856,10 +932,33 @@ class Sim:
             size = min(300.0, max(10.0, float(c.get("size", 60))))
             spacing = min(100.0, max(3.0, float(c.get("spacing", 15))))
             margin = min(20.0, max(0.0, float(c.get("margin", 4))))
-            if (size / spacing + 1) ** 2 > MAX_POINTS * 1.5:
-                self.log(f"That grid is too dense (limit about {MAX_POINTS} points)")
+            if len(self.corners) >= 3:
+                lat0, lon0 = self.corners[0]
+                k = math.cos(math.radians(lat0))
+                xy = [(math.radians(lo - lon0) * R_EARTH * k, math.radians(la - lat0) * R_EARTH) for la, lo in self.corners]
+                area = abs(sum(xy[i][0] * xy[i - 1][1] - xy[i - 1][0] * xy[i][1] for i in range(len(xy)))) / 2
+                est = area / spacing ** 2
+            else:
+                est = (size / spacing + 1) ** 2
+            if est > MAX_POINTS * 1.5:
+                self.log(f"That grid is too dense (limit about {MAX_POINTS} points): use a bigger spacing")
                 return
             self.make_grid(size, spacing, margin)
+        elif name == "set_corners" and self.state in ("IDLE", "DONE"):
+            corners = [(float(p["lat"]), float(p["lon"])) for p in c.get("corners", [])[:MAX_CORNERS + 1]]
+            if len(corners) > MAX_CORNERS:
+                self.log(f"Too many corners (limit {MAX_CORNERS})")
+                return
+            ref = self.true or self.est
+            if ref and any(dist_m(la, lo, *ref) > 2000 for la, lo in corners):
+                self.log("Field corners must be within 2 km of the rover")
+                return
+            with self.lock:
+                self.corners = corners
+            if c.get("announce"):
+                self.log(f"Field outline: {len(corners)} corner(s)" + ("" if len(corners) >= 3 else " (need 3+)"))
+        elif name == "set_start":
+            self.move_start(c)
         elif name == "add_obstacle":
             lat, lon = float(c["lat"]), float(c["lon"])
             r = min(10.0, max(0.3, float(c.get("r", 1.0))))
@@ -892,7 +991,7 @@ class Sim:
             self.probe_steps = PROBE_FAST if c.get("on") else PROBE_REAL
             self.log("Probe cycle: " + ("fast (6 s)" if c.get("on") else "real timing (37 s)"))
         elif name == "speed":
-            if c.get("value") in SPEEDS:
+            if c.get("value") in SPEEDS or isinstance(c.get("value"), (int, float)):
                 self.set_speed(c["value"])
         elif name == "reset" and self.state in ("IDLE", "DONE"):
             with self.lock:
@@ -903,7 +1002,7 @@ class Sim:
             # fresh start for the next driver: no points, obstacles, results, GPS error
             with self.lock:
                 self.results, self.track, self.obstacles = [], [], []
-                self.points = []
+                self.points, self.corners = [], []
             self.field, self.fence_dirty = [], True
             self.gps_sigma = 0.0
             self.home = self.est
@@ -1098,7 +1197,7 @@ def _no_nan(name):
     raise ValueError(f"{name} not allowed")
 
 
-SIM_CMDS = {"start", "stop", "resume", "come_home", "set_points", "grid", "add_obstacle",
+SIM_CMDS = {"start", "stop", "resume", "come_home", "set_points", "grid", "add_obstacle", "set_corners", "set_start",
             "remove_obstacle", "clear_obstacles", "gps_error", "fast_probe", "speed", "reset",
             "reset_all", "restart_sitl"}
 ADMIN_CMDS = {"restart_sitl"}
@@ -1224,6 +1323,7 @@ def main(argv=None):
     g.add_argument("--driver-timeout", type=float, default=10.0, help="seconds without a poll before the driver loses control")
     g.add_argument("--turn-minutes", type=float, default=15.0, help="driving turn length when someone is waiting")
     g.add_argument("--restart-cmd", help="shell command that restarts SITL (e.g. 'pkill -x ardurover' when a supervisor restarts it)")
+    g.add_argument("--home-file", help="file the SITL launcher reads the start location from; enables 'Move start here'")
     a = ap.parse_args(argv)
 
     verifier = None
@@ -1239,6 +1339,7 @@ def main(argv=None):
 
     sim = Sim(a.connect, a.baud, a.logs)
     sim.restart_cmd = a.restart_cmd
+    sim.home_file = a.home_file
     control = Control(sim.log, a.admins.split(","), a.driver_timeout, a.turn_minutes * 60,
                       open_mode=(a.auth == "none"))
     if a.points:
