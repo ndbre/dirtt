@@ -19,6 +19,11 @@ per grid point (sent 3 times only; re-sending cancels the avoidance detour), dec
 ≤ 1.5 m by its own haversine distance (WP_RADIUS 1 m + 0.5 m), then switches to HOLD and probes.
 `AVOID_ENABLE 0` (simple avoidance deadlocks pivot turns). SITL simulator with a browser UI is in
 `code/Navigation/` (`NAV_SIM.md` explains how to run it); works on ArduPilot 4.6 and 4.7+/master.
+**Live at https://dirtt-sim.ndbre.com** (since 2026-11-19): runs on Nolan's home PC (Windows 11,
+WSL Ubuntu 24.04, Linux user `functor`), Cloudflare Tunnel `dirtt-home`, Access team `dirtt` with
+an email allow-list and one-time PIN. One driver at a time. Setup and upkeep:
+`code/Navigation/server/SETUP.md`. To deploy sim code changes: merge to master, then on the PC
+`cd ~/dirtt && git pull && pkill -f nav_sim.py`.
 
 **Drivetrain and Chassis (Rebecca).** Four FIT0185 gearmotors, Cytron MDDRC10 driver in RC/mixed
 mode (1500 µs neutral captured at power-up). The FC drives it; for bench demos an Arduino can
@@ -52,8 +57,7 @@ header stack height first (see its README).
 - Website text is out of date: Home says sampling points "about 100 m apart" and "multi-day
   operation" on solar; About still says "Temporary Text"; "Project status" predates the FDR;
   team bios are empty.
-- Navigation sim on the web (back burner): home server + Cloudflare Tunnel at
-  `dirtt-sim.ndbre.com`, Cloudflare Access email allow-list, one driver at a time with a
-  heartbeat lock, everyone else watches.
+- Add Dr. Hudson and graders to the nav sim's Access policy as needed (Zero Trust → Access →
+  Applications → DIRTT nav sim).
 - `cad/Unsorted/` (jigs, mounts) could be filed under the subsystems.
 - Archive the old `ndbre/dirtt-files` repo (merged here 2026-11-18).
