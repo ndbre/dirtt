@@ -43,6 +43,9 @@ AGM** (Renogy set to Sealed). Bench charging: 14.4 V absorb / 13.6 V float, or f
 18 V / 1.7 A from a bench supply to stand in for the panel.
 
 **Data Backup and Control (Cara).** Pi 3 B on the rover, Pi 5 base station, RFM95W LoRa Bonnets.
+Base station enclosure (Pi 5 + LoRa Bonnet, OLED window, flex buttons, SMA antenna hole):
+`cad/Data and Communication/Base Station Enclosure/`. Not printed yet; check button height and
+header stack height first (see its README).
 
 ## Open items
 
