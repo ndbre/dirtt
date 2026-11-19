@@ -15,11 +15,18 @@ FENCE_ACTION 0
 # exclusion circles) in 8 directions, like the RPLIDAR feeding the flight controller.
 PRX1_TYPE 10
 #
-# Obstacle avoidance: BendyRuler path planner. Keep 1.5 m from obstacles, look 5 m ahead
-# (the defaults, 5 m / 15 m, are sized for bigger vehicles than a 0.6 m rover on a 15 m grid).
+# Obstacle avoidance: BendyRuler path planner, looking 5 m ahead (the default 15 m is sized
+# for bigger vehicles than a 0.6 m rover on a 15 m grid).
+# How close the rover's centre may get to an obstacle circle's centre:
+#     radius + FENCE_MARGIN + OA_MARGIN_MAX
+# With the defaults (2 m + 1.5 m) a 1 m obstacle kept the rover 4.5 m away, so any sample point
+# within ~4 m of an obstacle was unreachable and BendyRuler dithered back and forth forever.
+# 1 m + 1 m: a 1 m obstacle keeps the rover 3 m from its centre (2 m from its edge).
+# (Obstacles the real LiDAR sees get only OA_MARGIN_MAX; FENCE_MARGIN applies to fence zones.)
 OA_TYPE 1
-OA_MARGIN_MAX 1.5
+OA_MARGIN_MAX 1
 OA_BR_LOOKAHEAD 5
+FENCE_MARGIN 1
 #
 # Simple avoidance OFF. In Rover 4.6 it refuses to pivot when an obstacle (or, in SITL, the
 # field edge) is within ~3 m ahead, so a rover facing a corner never turns around.

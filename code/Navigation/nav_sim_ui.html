@@ -104,7 +104,9 @@ details { margin-top: 8px; } summary { cursor: pointer; color: var(--text); font
 .pt { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 700 11px system-ui;
   border: 2px solid #fff; background: rgba(20,24,30,.75); color: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.6); }
 .pt.cur { background: #ffb547; color: #111; } .pt.OK { background: #3ecf8e; color: #062; border-color: #d6ffe9; }
-.pt.SKIPPED, .pt.ABORTED { background: #ff5a5f; }
+.pt.SKIPPED, .pt.ABORTED, .pt.BLOCKED { background: #ff5a5f; }
+.pt.blocked { box-shadow: 0 0 0 3px #ff5a5f; }
+.li .warnflag { color: var(--red); font-size: 11.5px; margin-left: 6px; }
 .corner { width: 16px; height: 16px; background: #ffd166; border: 2px solid #111; display: grid; place-items: center;
   font: 700 9px system-ui; color: #111; }
 .rover { width: 30px; height: 30px; }
@@ -169,6 +171,7 @@ details { margin-top: 8px; } summary { cursor: pointer; color: var(--text); font
         <button id="b-stop" class="stop">STOP</button>
         <button id="b-home" class="home">COME HOME</button>
       </div>
+      <div class="row"><button class="small" id="b-skip" title="Give up on the current point and go to the next">Skip point</button></div>
       <div class="hint">STOP holds in place (the probe cycle freezes too). COME HOME retracts the probe if it's down, then returns to the start.</div>
     </div>
 
@@ -197,6 +200,7 @@ details { margin-top: 8px; } summary { cursor: pointer; color: var(--text); font
         <div class="sw" style="background:#ffd166"></div><div>Field outline you drew (for the grid)</div>
         <div class="sw" style="background:#fff; height:2px; outline:1px solid #999"></div><div>Field edge in the flight controller (geofence)</div>
         <div class="dot" style="background:#ff5a5f"></div><div>Obstacle (exclusion circle the simulated LiDAR sees)</div>
+        <div class="dot" style="background:transparent; outline:2px dashed #ff5a5f; outline-offset:-2px"></div><div>Keep-out: how close avoidance lets the rover get. Points inside are skipped</div>
       </div>
     </div>
 
@@ -378,6 +382,7 @@ $('b-start').onclick = () => post({cmd: 'start'});
 $('b-stop').onclick = () => post({cmd: 'stop'});
 $('b-resume').onclick = () => post({cmd: 'resume'});
 $('b-home').onclick = () => post({cmd: 'come_home'});
+$('b-skip').onclick = () => post({cmd: 'skip'});
 $('b-grid').onclick = () => post({cmd: 'grid', size: +$('g-size').value, spacing: +$('g-sp').value, margin: +$('g-mg').value});
 $('b-clearpts').onclick = () => post({cmd: 'set_points', points: []});
 $('b-clearobs').onclick = () => post({cmd: 'clear_obstacles'});
@@ -424,6 +429,8 @@ document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => post({cmd: 
 $('fastprobe').onchange = () => post({cmd: 'fast_probe', on: $('fastprobe').checked});
 
 // ---------------------------------------------------------------- drawing
+const keepout = (o) => o.r + (S.keepout_extra || 0);
+const blockedBy = (lat, lon) => S.obstacles.find(o => distM([lat, lon], [o.lat, o.lon]) < keepout(o) - 0.5);
 function statusOf(n) {
   const r = S.results.filter(r => r.n === n).pop();
   if (r) return r.status;
@@ -433,7 +440,7 @@ function statusOf(n) {
 
 function refreshPoints(force) {
   if (!S) return;
-  const sig = JSON.stringify(S.points) + tool + canEdit();
+  const sig = JSON.stringify(S.points) + JSON.stringify(S.obstacles) + S.keepout_extra + tool + canEdit();
   if (force || sig !== ptsSig) {
     ptsSig = sig;
     layers.points.clearLayers(); ptMarkers.length = 0;
@@ -454,6 +461,7 @@ function refreshPoints(force) {
       const row = el('div', 'li'), t = el('span', 't');
       t.appendChild(el('b', null, '#' + p.n));
       t.appendChild(document.createTextNode(S.home ? `${distM(S.home, [p.lat, p.lon]).toFixed(1)} m from start` : ll6(p.lat, p.lon)));
+      if (blockedBy(p.lat, p.lon)) t.appendChild(el('span', 'warnflag', 'inside a keep-out: will be skipped'));
       const x = el('button', 'x', '×'); x.title = 'Delete point ' + p.n; x.disabled = !canEdit(); x.onclick = () => delPoint(i);
       t.title = ll6(p.lat, p.lon);
       t.style.cursor = 'pointer'; t.onclick = () => map.panTo([p.lat, p.lon]);
@@ -463,7 +471,7 @@ function refreshPoints(force) {
   }
   S.points.forEach((p, i) => {
     const e = ptMarkers[i] && ptMarkers[i].getElement();
-    if (e) e.firstChild.className = 'pt ' + statusOf(p.n);
+    if (e) e.firstChild.className = 'pt ' + statusOf(p.n) + (blockedBy(p.lat, p.lon) && !statusOf(p.n) ? ' blocked' : '');
   });
 }
 
@@ -499,15 +507,16 @@ function refreshCorners(force) {
 }
 
 function refreshObstacles() {
-  const sig = JSON.stringify(S.obstacles) + tool + canCtl();
+  const sig = JSON.stringify(S.obstacles) + S.keepout_extra + tool + canCtl();
   if (sig === obsSig) return;
   obsSig = sig;
   layers.obstacles.clearLayers();
   const edit = tool === 'obstacles' && canCtl();
   S.obstacles.forEach(o => {
+    L.circle([o.lat, o.lon], {radius: keepout(o), color: '#ff5a5f', weight: 1.5, dashArray: '4 5', fill: false, interactive: false}).addTo(layers.obstacles);
     const c = L.circle([o.lat, o.lon], {radius: o.r, color: '#ff5a5f', weight: 2, fillColor: '#ff5a5f', fillOpacity: .45,
       interactive: edit, bubblingMouseEvents: false});
-    if (edit) c.on('click', () => popup([o.lat, o.lon], `Obstacle, <b>${o.r} m</b> radius`, [['Delete obstacle', () => delObstacle(o.id), 'primary']]));
+    if (edit) c.on('click', () => popup([o.lat, o.lon], `Obstacle, <b>${o.r} m</b> radius<div class="hint">Avoidance keeps the rover ${keepout(o).toFixed(1)} m from its centre (dashed ring).</div>`, [['Delete obstacle', () => delObstacle(o.id), 'primary']]));
     c.addTo(layers.obstacles);
   });
   const list = $('oblist'); list.textContent = '';
@@ -589,6 +598,7 @@ function render() {
   $('b-stop').disabled = !ctl || !active;
   $('b-resume').disabled = !ctl || !['STOPPED', 'PAUSED'].includes(S.state);
   $('b-home').disabled = !ctl || !['DRIVING', 'PROBING', 'STOPPED', 'PAUSED'].includes(S.state);
+  $('b-skip').disabled = !ctl || !S.can_skip;
   ['b-clearpts', 'b-load', 'b-resetall', 'b-clearcorners', 'b-applycorners'].forEach(id => $(id).disabled = !edit);
   $('b-grid').disabled = !edit || !S.has_planner;
   $('b-clearobs').disabled = !ctl;

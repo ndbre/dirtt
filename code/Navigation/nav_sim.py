@@ -45,6 +45,7 @@ except Exception:                           # noqa: BLE001 - UI still works with
 R_EARTH = 6378137.0
 POS_MASK = 0b110111111000                  # SET_POSITION_TARGET: position only
 STOPPED_S = 3.0                            # "not moving" = < 0.2 m in this long
+STUCK_S = 30.0                             # no 1 m of progress toward the point in this long = stuck
 TRACK_PERIOD_S = 0.5
 FENCE_PAD_M = 8.0                          # field boundary = points + home, padded by this
 PROBE_REAL = (("settle", 2.0), ("probe down", 15.0), ("reading sensor", 5.0), ("probe up", 15.0))
@@ -68,6 +69,8 @@ WANT = {
     "FENCE_ACTION": (0, False, "report only: avoidance, not the fence, handles obstacles"),
     "AVOID_ENABLE": (0, False, "simple avoidance off: it deadlocks pivot turns near obstacles; BendyRuler avoids"),
     "OA_TYPE": (1, True, "BendyRuler obstacle avoidance"),
+    "OA_MARGIN_MAX": (1.0, False, "avoidance keeps the rover this far beyond an obstacle's fence margin"),
+    "FENCE_MARGIN": (1.0, False, "added to every obstacle's radius by the avoidance"),
     "PRX1_TYPE": (10, True, "SITL proximity sensor = simulated LiDAR"),
 }
 
@@ -223,6 +226,8 @@ class Sim:
                           "max_true": max(errs) if errs else None,
                           "within3": sum(e <= 3.0 for e in errs)},
                 "editable": self.state in ("IDLE", "DONE", "CONNECTING"),
+                "keepout_extra": round(self.keepout_extra(), 2),
+                "can_skip": self.state == "DRIVING" or (self.state in ("STOPPED", "PAUSED") and self.held_from == "DRIVING"),
                 "has_planner": grid_planner is not None,
                 "logfile": f"survey_{self.stamp}_samples.csv" if self.stamp else None,
             }
@@ -249,7 +254,7 @@ class Sim:
             self.pump(0.2)
         if self.est is None:
             self.log("No position from the flight controller yet (GPS/EKF still settling?)")
-        names = list(WANT) + ["WP_SPEED", "CRUISE_SPEED"] + [g + "_X" for g in GLITCH_NAMES]
+        names = list(WANT) + ["WP_SPEED", "CRUISE_SPEED"] + [g + "_X" for g in GLITCH_NAMES]   # WANT has the margins
         for attempt in range(3):                   # ask again for anything that didn't answer
             for name in names:
                 if name not in self.params:
@@ -688,6 +693,18 @@ class Sim:
                                      f"{tru[0]:.7f}", f"{tru[1]:.7f}", row["true_error_m"], self.gps_sigma])
             self._files[0].flush()
 
+    def keepout_extra(self):
+        """Avoidance keeps the rover's centre this far beyond an obstacle circle's radius."""
+        return (self.params.get("FENCE_MARGIN", 2.0) or 0.0) + (self.params.get("OA_MARGIN_MAX", 1.5) or 0.0)
+
+    def blocked_by(self, lat, lon):
+        """The obstacle whose avoidance keep-out zone contains this point (the rover can't get there)."""
+        extra = self.keepout_extra()
+        for o in self.obstacles:
+            if dist_m(lat, lon, o["lat"], o["lon"]) < o["r"] + extra - 0.5:   # some slack: arrival is 1.5 m
+                return o
+        return None
+
     def stopped(self):
         if not self.hist or now_s() - self.hist[0][0] < STOPPED_S:
             return False
@@ -700,10 +717,14 @@ class Sim:
 
     def start_leg(self):
         p = self.points[self.idx]
+        if self.blocked_by(p["lat"], p["lon"]):
+            self.skip_blocked(p)
+            return
         d0 = dist_m(*self.est, p["lat"], p["lon"])
         v = max(0.3, self.wp_speed)
         self.limit = 30 + 3 * d0 / v
         self.t_leg, self.next_send, self.sends_left = now_s(), 0.0, 3
+        self.best_d, self.t_best = d0, now_s()      # stuck detection
         self.go("DRIVING", f"Point {p['n']}/{len(self.points)}")
         self.log(f"Point {p['n']}/{len(self.points)}: {d0:.1f} m away (time limit {self.limit:.0f} s)")
 
@@ -742,6 +763,14 @@ class Sim:
             if (y1 > 0) != (y2 > 0) and 0 < x1 + (0 - y1) * (x2 - x1) / (y2 - y1):
                 hit = not hit
         return hit
+
+    def skip_blocked(self, p):
+        o = self.blocked_by(p["lat"], p["lon"])
+        self.log(f"  BLOCKED point {p['n']}: inside an obstacle's keep-out zone ({o['r']:g} m obstacle "
+                 f"{dist_m(p['lat'], p['lon'], o['lat'], o['lon']):.1f} m away; the rover must stay "
+                 f"{o['r'] + self.keepout_extra():.1f} m from its centre). Skipping it")
+        self.record("BLOCKED", p)
+        self.next_point()
 
     def next_point(self):
         self.idx += 1
@@ -808,6 +837,9 @@ class Sim:
                 self.hold("PAUSED", "DRIVING", f"mode changed to {self.mode} (failsafe, fence or operator)")
                 return
             p = self.points[self.idx]
+            if self.blocked_by(p["lat"], p["lon"]):       # an obstacle was dropped next to it mid-leg
+                self.skip_blocked(p)
+                return
             if self.sends_left and now_s() >= self.next_send:
                 # Send the target 3 times, 1 s apart, then STOP sending. Every SET_POSITION_TARGET
                 # cancels ArduPilot's obstacle-avoidance detour (AR_WPNav_OA::set_desired_location),
@@ -819,6 +851,16 @@ class Sim:
             d = dist_m(*self.est, p["lat"], p["lon"])
             with self.lock:
                 self.detail = f"Point {p['n']}/{len(self.points)}: {d:.1f} m to go (GPS)"
+            if d < self.best_d - 1.0:
+                self.best_d, self.t_best = d, now_s()
+            elif now_s() - self.t_best > STUCK_S:
+                # Obstacle avoidance can dither forever (back and forth, never closer). Don't burn
+                # through the rest of the points skipping them one time limit at a time: stop and
+                # let the operator decide (remove an obstacle, Resume, Skip point, or COME HOME).
+                self.set_mode("HOLD")
+                self.hold("PAUSED", "DRIVING", f"Stuck: no closer to point {p['n']} in {STUCK_S:.0f} s "
+                          f"({d:.1f} m away). Move or delete obstacles near it, then Resume - or Skip point")
+                return
             settled = now_s() - self.t_leg > STOPPED_S + 2      # don't count the stillness before the leg
             if d <= self.arrive_m or (d <= 2 * self.arrive_m and settled and self.stopped()):
                 self.set_mode("HOLD")
@@ -918,6 +960,13 @@ class Sim:
                 self.hold("STOPPED", frm, "STOP from the operator")
         elif name == "resume":
             self.resume()
+        elif name == "skip":
+            driving = self.state == "DRIVING" or (self.state in ("STOPPED", "PAUSED") and self.held_from == "DRIVING")
+            if driving and self.idx < len(self.points):
+                p = self.points[self.idx]
+                self.log(f"  SKIPPED point {p['n']} (operator)")
+                self.record("SKIPPED", p)
+                self.next_point()
         elif name == "come_home":
             if self.state in ("DRIVING", "PROBING", "STOPPED", "PAUSED"):
                 self.come_home()
@@ -1197,7 +1246,7 @@ def _no_nan(name):
     raise ValueError(f"{name} not allowed")
 
 
-SIM_CMDS = {"start", "stop", "resume", "come_home", "set_points", "grid", "add_obstacle", "set_corners", "set_start",
+SIM_CMDS = {"start", "stop", "resume", "skip", "come_home", "set_points", "grid", "add_obstacle", "set_corners", "set_start",
             "remove_obstacle", "clear_obstacles", "gps_error", "fast_probe", "speed", "reset",
             "reset_all", "restart_sitl"}
 ADMIN_CMDS = {"restart_sitl"}

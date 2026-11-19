@@ -40,7 +40,9 @@ AP="$ARDUPILOT"
 DEFAULTS="$AP/Tools/autotest/default_params/rover.parm,$AP/Tools/autotest/default_params/rover-skid.parm,$RUN/dirtt_sitl.parm"
 # -w: wipe saved parameters on every start, so each restart is a clean rover at HOME_LOCATION
 # The start location can be moved from the sim page ("Move start here"): it writes $RUN/home_location
-sitl() { local loc="$HOME_LOCATION"; [ -s "$RUN/home_location" ] && loc="$(head -1 "$RUN/home_location")"
+# SITL writes a flight log (~5 MB a minute while armed) on every start: keep the newest 5
+sitl() { ls -1t "$RUN"/logs/*.BIN 2>/dev/null | tail -n +5 | xargs -r rm -f
+         local loc="$HOME_LOCATION"; [ -s "$RUN/home_location" ] && loc="$(head -1 "$RUN/home_location")"
          cd "$RUN" && exec "$AP/build/sitl/bin/ardurover" -S -w --model rover-skid --speedup 1 \
            --defaults "$DEFAULTS" --sim-address=127.0.0.1 -I0 --home "$loc"; }
 nav() { cd "$NAV" && exec python3 nav_sim.py --connect tcp:127.0.0.1:5760 --host 127.0.0.1 --port "$PORT" \
