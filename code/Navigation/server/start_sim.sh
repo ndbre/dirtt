@@ -39,11 +39,14 @@ supervise() {                                   # supervise NAME COMMAND...  (re
 AP="$ARDUPILOT"
 DEFAULTS="$AP/Tools/autotest/default_params/rover.parm,$AP/Tools/autotest/default_params/rover-skid.parm,$RUN/dirtt_sitl.parm"
 # -w: wipe saved parameters on every start, so each restart is a clean rover at HOME_LOCATION
-sitl() { cd "$RUN" && exec "$AP/build/sitl/bin/ardurover" -S -w --model rover-skid --speedup 1 \
-           --defaults "$DEFAULTS" --sim-address=127.0.0.1 -I0 --home "$HOME_LOCATION"; }
+# The start location can be moved from the sim page ("Move start here"): it writes $RUN/home_location
+sitl() { local loc="$HOME_LOCATION"; [ -s "$RUN/home_location" ] && loc="$(head -1 "$RUN/home_location")"
+         cd "$RUN" && exec "$AP/build/sitl/bin/ardurover" -S -w --model rover-skid --speedup 1 \
+           --defaults "$DEFAULTS" --sim-address=127.0.0.1 -I0 --home "$loc"; }
 nav() { cd "$NAV" && exec python3 nav_sim.py --connect tcp:127.0.0.1:5760 --host 127.0.0.1 --port "$PORT" \
            --auth "$AUTH" ${ACCESS_TEAM:+--access-team "$ACCESS_TEAM"} ${ACCESS_AUD:+--access-aud "$ACCESS_AUD"} \
-           --admins "$ADMINS" --logs "$RUN/runs" --restart-cmd "pkill -x ardurover"; }
+           --admins "$ADMINS" --logs "$RUN/runs" --restart-cmd "pkill -x ardurover" \
+           --home-file "$RUN/home_location"; }
 tunnel() { exec cloudflared tunnel --no-autoupdate run --token "$TUNNEL_TOKEN"; }
 
 trap 'kill 0' EXIT INT TERM

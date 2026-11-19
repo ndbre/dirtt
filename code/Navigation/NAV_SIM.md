@@ -56,10 +56,19 @@ have control.
 
 ## Using it
 
-1. **Make the points.** Either click **Make grid** (a square of the given size, with the rover 10 m in from the south-west corner), or use **Load CSV** with a `grid_planner.py` plan, or pick **Points** and click on the map.
-2. **Set up the run.** Set the GPS error and the speed. **Fast 2 m/s** plus the fast probe cycle finishes 9 points in about 3 minutes. **Real 0.6 m/s** plus the real probe cycle (37 s) is the honest timing.
+1. **Make the points.** Three ways:
+   - **Field tool:** click the field's corners in order around the edge (drag to move, click one to delete), or open *Type or paste corner coordinates* and enter `lat, lon` per line. Then set the spacing and how far in from the edge, and press **Make grid**: `grid_planner.py` fills the outline.
+   - **Make grid** with no outline: a square of the given size, with the rover 10 m in from the south-west corner.
+   - **Points tool:** click to add, drag to move, click a point to delete it. Or **Load CSV** with a `grid_planner.py` plan.
+
+   The point and obstacle lists in the panel also have a × on every row.
+2. **Set up the run.** GPS error; drive speed (slider 0.2 to 3 m/s, presets include 0.6 m/s, the real rover); fast or real probe cycle.
 3. **Press Start survey.** To add obstacles, pick **Obstacles** and click on the map. You can do this mid-run.
 4. **Read the results.** The NV2 card fills in as points are sampled. The CSVs go to `runs/survey_<time>_*.csv`, with the true-position columns added. `plot_survey.py` still reads them.
+
+**Rover start:** on the shared server (`server/`), the **Start** tool moves the rover anywhere on the map; the simulator restarts there (about 40 s). Running it yourself, start `sim_vehicle.py` with `--custom-location=LAT,LON,100,0` instead.
+
+**Geofence:** the flight controller's fence is your outline grown by 8 m (the white dashed line). SITL's simulated LiDAR sees the fence as a wall, and with the fence right on the outline, points near the edge got skipped.
 
 ### Suggested recording for the FDR (NV2)
 
