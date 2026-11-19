@@ -82,9 +82,11 @@ Make a grid and run a survey to check that everything works, then press Ctrl+C.
    `\\wsl$\Ubuntu-24.04\home\dirtt\dirtt\code\Navigation\server\` in File Explorer), then in
    PowerShell **as Administrator**, in that folder:
    ```
-   powershell -ExecutionPolicy Bypass -File .\register_task.ps1
+   powershell -ExecutionPolicy Bypass -File .\register_task.ps1 -LinuxUser <your Linux user>
    Start-ScheduledTask -TaskName "DIRTT nav sim"
    ```
+   It asks for the Windows password. If the account has none, leave it blank: the sim then starts
+   at sign-in, and a password-less account signs in by itself at boot.
 2. Settings → System → Power: **Sleep: Never** when plugged in.
 3. Settings → Windows Update → Advanced → **Active hours**: cover the times you might demo.
 4. BIOS/UEFI: **Restore on AC power loss = Power On** (a.k.a. "AC Back", "After power loss"),
