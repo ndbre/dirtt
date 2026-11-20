@@ -84,6 +84,19 @@ have control.
 
 ## Things to know (SITL vs the real rover)
 
+- **Obstacles keep the rover further away than they look.** Avoidance keeps the rover's centre
+  `radius + FENCE_MARGIN + OA_MARGIN_MAX` from an obstacle's centre: the dashed ring around each
+  obstacle on the map. With ArduPilot's defaults (2 m + 1.5 m) a 1 m obstacle 3–4 m from a sample point
+  made the point unreachable and BendyRuler drove back and forth forever. `dirtt_sitl.parm` now uses
+  1 m + 1 m. Points inside a ring are flagged on the map and in the list and skipped as BLOCKED.
+- **Stuck detection.** If the rover gets no closer to its point for 30 s, the sim pauses with a
+  "Stuck" message instead of skipping the rest of the survey one time limit at a time. Move or delete
+  the obstacle, then **Resume**, or press **Skip point**. The real `survey_mission.py` should get the
+  same check before field testing.
+- **BendyRuler is a local planner.** In a dense obstacle field it prefers to keep its current heading
+  and can pick the wrong way round an obstacle into a corner. (Dijkstra's planner, `OA_TYPE 2/3`, did
+  no better on the same layout.)
+
 - **`AVOID_ENABLE 0`.** ArduPilot's *simple* avoidance refused to pivot whenever something was within ~3 m ahead. A rover facing a corner sat still forever. BendyRuler (`OA_TYPE 1`) still does the avoiding. Re-check this on the real rover with the real LiDAR before trusting it.
 - **The field edge looks like a wall to the simulated LiDAR**, because SITL builds its proximity readings from the fence. The real LiDAR won't see a field edge.
 - **Obstacles also exist as GPS-placed fence zones.** With 2–2.5 m of GPS error, the rover's clearance around an obstacle sometimes shrank to ~0.1 m, because the flight controller thinks the obstacle is somewhere else. The real LiDAR measures relative to the rover, so it doesn't have this problem.
