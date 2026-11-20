@@ -312,6 +312,7 @@ const estDot = L.circleMarker([0, 0], {radius: 6, color: '#08121f', weight: 2, f
 const gpsDot = L.circleMarker([0, 0], {radius: 4, color: '#08121f', weight: 1, fillColor: '#ff4fd8', fillOpacity: 1, interactive: false});
 const homeMk = L.marker([0, 0], {icon: L.divIcon({className: 'homestar', html: '★', iconSize: [22, 22], iconAnchor: [11, 11]}), interactive: false});
 
+const estPts = [], truePts = [];
 let tool = 'pan', centred = false, trackLen = 0, ptsSig = '', obsSig = '', fieldSig = '', cornSig = '', lastHome = null;
 const ptMarkers = [];
 
@@ -644,8 +645,12 @@ function render() {
     layers.ring.setLatLng([S.target.lat, S.target.lon]).setRadius(S.arrive_m).addTo(map);
     layers.ring3.setLatLng([S.target.lat, S.target.lon]).addTo(map);
   } else { layers.ring.remove(); layers.ring3.remove(); }
-  if (S.track_len < trackLen) { layers.trueTrack.setLatLngs([]); layers.estTrack.setLatLngs([]); trackLen = 0; }
-  S.track.forEach(t => { layers.estTrack.addLatLng([t[1], t[2]]); layers.trueTrack.addLatLng([t[3], t[4]]); });
+  // track: new points arrive incrementally (?since=); redraw each line once per poll, not per point
+  if (S.track_len < trackLen || S.track_from > trackLen) { estPts.length = 0; truePts.length = 0; }
+  if (S.track.length || S.track_len < trackLen) {
+    S.track.forEach(t => { estPts.push([t[1], t[2]]); truePts.push([t[3], t[4]]); });
+    layers.estTrack.setLatLngs(estPts); layers.trueTrack.setLatLngs(truePts);
+  }
   trackLen = S.track_len;
   refreshPoints(false); refreshCorners(false); refreshObstacles(); drawLidar();
 
