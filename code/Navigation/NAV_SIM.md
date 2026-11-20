@@ -66,6 +66,15 @@ have control.
 3. **Press Start survey.** To add obstacles, pick **Obstacles** and click on the map. You can do this mid-run.
 4. **Read the results.** The NV2 card fills in as points are sampled. The CSVs go to `runs/survey_<time>_*.csv`, with the true-position columns added. `plot_survey.py` still reads them.
 
+**Soil readings (made up):** each probe cycle "measures" a simulated field: a gentle trend, a wet
+low spot, an acidic patch, a salty/fertilised strip and some small-scale texture. Readings get
+SEN0604-like error: moisture ±2 %, temp ±0.5 °C, EC ±3 % of full scale (±300 µS/cm); pH σ 0.2 plus a
+small calibration offset, so most readings are within the ±0.5 pH requirement and a few aren't.
+Hover or tap a sampled point to see its readings next to the true values. The **Soil readings** card
+colours the points by pH, EC, temperature or moisture. Its heat map is either **From samples**
+(interpolated, like the base station's map) or **True soil**. **New soil** makes a new random
+layout; so does **Start fresh**. The CSVs get the true values and the layout number too.
+
 **Rover start:** on the shared server (`server/`), the **Start** tool moves the rover anywhere on the map; the simulator restarts there (about 40 s). Running it yourself, start `sim_vehicle.py` with `--custom-location=LAT,LON,100,0` instead.
 
 **Geofence:** the flight controller's fence is your outline grown by 8 m (the white dashed line). SITL's simulated LiDAR sees the fence as a wall, and with the fence right on the outline, points near the edge got skipped.

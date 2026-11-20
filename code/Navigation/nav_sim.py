@@ -192,6 +192,7 @@ class Sim:
         self.restart_cmd = None    # shell command that restarts SITL (server mode)
         self.home_file = None      # file start_sim.sh reads the SITL start location from
         self.corners = []          # field outline drawn by the user, for "Make grid": [(lat, lon)]
+        self.soil = None           # SoilField: the made-up truth the probe "measures"
 
     # ------------------------------------------------------------ logging / snapshot
     def log(self, msg):
@@ -232,6 +233,7 @@ class Sim:
                           "within3": sum(e <= 3.0 for e in errs)},
                 "editable": self.state in ("IDLE", "DONE", "CONNECTING"),
                 "keepout_extra": round(self.keepout_extra(), 2),
+                "soil_seed": self.soil_field().seed if (self.home or self.est) else None,
                 "can_skip": self.state == "DRIVING" or (self.state in ("STOPPED", "PAUSED") and self.held_from == "DRIVING"),
                 "has_planner": grid_planner is not None,
                 "logfile": f"survey_{self.stamp}_samples.csv" if self.stamp else None,
@@ -672,7 +674,8 @@ class Sim:
         self.samples_w, self.track_w = csv.writer(sf), csv.writer(tf)
         self.samples_w.writerow(["n", "status", "time", "planned_lat", "planned_lon", "lat", "lon", "error_m",
                                  "ph", "ec_uScm", "temp_c", "moisture_pct", "true_lat", "true_lon",
-                                 "true_error_m", "gps_error_setting_m"])
+                                 "true_error_m", "gps_error_setting_m",
+                                 "true_ph", "true_ec_uScm", "true_temp_c", "true_moisture_pct", "soil_seed"])
         self.track_w.writerow(["t", "lat", "lon", "mode", "true_lat", "true_lon"])
         with open(os.path.join(self.out_dir, f"survey_{self.stamp}_points.csv"), "w", newline="") as f:
             w = csv.writer(f)
@@ -694,15 +697,25 @@ class Sim:
                "error_m": round(dist_m(*est, p["lat"], p["lon"]), 2),
                "true_error_m": round(dist_m(*tru, p["lat"], p["lon"]), 2),
                "lat": est[0], "lon": est[1], "true_lat": tru[0], "true_lon": tru[1]}
-        row.update(reading or {"ph": "", "ec_uScm": "", "temp_c": "", "moisture_pct": ""})
+        row.update(reading or {k: "" for v in SOIL_VARS for k in (v, "true_" + v)})
         with self.lock:
             self.results.append(row)
         if self.samples_w:
             self.samples_w.writerow([p["n"], status, datetime.now().isoformat(timespec="seconds"),
                                      p["lat"], p["lon"], f"{est[0]:.7f}", f"{est[1]:.7f}", row["error_m"],
                                      row["ph"], row["ec_uScm"], row["temp_c"], row["moisture_pct"],
-                                     f"{tru[0]:.7f}", f"{tru[1]:.7f}", row["true_error_m"], self.gps_sigma])
+                                     f"{tru[0]:.7f}", f"{tru[1]:.7f}", row["true_error_m"], self.gps_sigma,
+                                     row["true_ph"], row["true_ec_uScm"], row["true_temp_c"], row["true_moisture_pct"],
+                                     self.soil.seed if self.soil else ""])
             self._files[0].flush()
+
+    def soil_field(self, renew=False):
+        """The current made-up soil, centred on the rover's start. New on Start fresh, New soil,
+        or when the start moves."""
+        origin = self.home or self.est
+        if origin and (renew or self.soil is None or dist_m(*origin, *self.soil.origin) > 500):
+            self.soil = SoilField(origin)
+        return self.soil
 
     def keepout_extra(self):
         """Avoidance keeps the rover's centre this far beyond an obstacle circle's radius."""
@@ -893,7 +906,8 @@ class Sim:
             if name == "settle":
                 self.probe_pos, self.probe_true = self.est, self.true      # where the probe goes in
             if name == "reading sensor" and not self.home_after_probe:
-                self.reading = simulated_probe(self.points[self.idx]["n"])
+                pos = self.probe_true or self.true                     # the soil where the probe really went in
+                self.reading = self.soil_field().measure(*pos)
             self.phase += 1
             if self.phase < len(self.probe_steps):
                 self.phase_end = now_s() + self.probe_steps[self.phase][1]
@@ -1019,6 +1033,11 @@ class Sim:
                 self.log(f"Field outline: {len(corners)} corner(s)" + ("" if len(corners) >= 3 else " (need 3+)"))
         elif name == "set_start":
             self.move_start(c)
+        elif name == "new_soil" and self.state in ("IDLE", "DONE"):
+            self.soil_field(renew=True)
+            with self.lock:
+                self.results = []
+            self.log(f"New made-up soil (layout #{self.soil.seed}). Previous readings cleared")
         elif name == "add_obstacle":
             lat, lon = float(c["lat"]), float(c["lon"])
             r = min(10.0, max(0.3, float(c.get("r", 1.0))))
@@ -1053,7 +1072,7 @@ class Sim:
         elif name == "speed":
             if c.get("value") in SPEEDS or isinstance(c.get("value"), (int, float)):
                 self.set_speed(c["value"])
-        elif name == "reset" and self.state in ("IDLE", "DONE"):
+        elif name == "reset" and self.state in ("IDLE", "DONE"):           # (keeps the same soil)
             with self.lock:
                 self.results, self.track = [], []
             self.home = self.est
@@ -1068,7 +1087,8 @@ class Sim:
             self.home = self.est
             self.upload_fence()
             self.go("IDLE", "Cleared - add sample points, then press Start")
-            self.log("Cleared points, obstacles, results and GPS error")
+            self.soil_field(renew=True)
+            self.log("Cleared points, obstacles, results and GPS error; new made-up soil")
         elif name == "restart_sitl":
             if not self.restart_cmd:
                 self.log("Restarting SITL is not set up on this server")
@@ -1123,12 +1143,84 @@ class Sim:
         self.close_logs()
 
 
-def simulated_probe(n):
-    """Stand-in for: actuator down -> read SEN0604 over RS-485 -> actuator up."""
-    return {"ph": round(random.gauss(6.4 + 0.03 * n, 0.25), 2),
-            "ec_uScm": int(max(50, random.gauss(600 + 15 * n, 120))),
-            "temp_c": round(random.gauss(14.0, 1.5), 1),
-            "moisture_pct": round(min(60, max(5, random.gauss(28, 4))), 1)}
+# ---------------------------------------------------------------- simulated soil
+SOIL_VARS = ("ph", "ec_uScm", "temp_c", "moisture_pct")
+# SEN0604 (datasheets/Soil Sensing/Sensor Specs.pdf): resolution, and the noise we give it
+#   moisture +/-2 % (0-50 %), temp +/-0.5 C, EC +/-3 % of 10000 uS/cm full scale, pH: no accuracy listed
+#   (the project requirement is +/-0.5 pH vs lab). Sigma ~ half the spec, so ~95 % of readings are in spec.
+SENSOR = {"ph": (0.1, 0.20), "ec_uScm": (1, 150.0), "temp_c": (0.1, 0.25), "moisture_pct": (0.1, 1.0)}
+SOIL_LIMITS = {"ph": (3.5, 9.0), "ec_uScm": (50, 3000), "temp_c": (5, 35), "moisture_pct": (3, 60)}
+
+
+class SoilField:
+    """A made-up but field-like soil: a gentle trend across the field, a wet low spot, an acidic
+    patch, a salty/fertilised strip, and some small-scale texture. Smooth in space, so nearby points
+    read alike and the heat map shows real-looking zones. Each new field gets a new random layout."""
+
+    def __init__(self, origin, seed=None):
+        self.origin = origin
+        self.seed = seed if seed is not None else random.randrange(1, 10 ** 6)
+        rng = random.Random(self.seed)
+        u = rng.uniform
+        self.k = math.cos(math.radians(origin[0]))
+        ang = u(0, 2 * math.pi)
+        self.trend = (math.cos(ang), math.sin(ang), u(-0.4, 0.4), u(-5, 5), u(-1.0, 1.0))  # dir, dpH, dmoist, dtemp per 100 m
+        # features land mostly NE of the start, where "Make grid" puts the field (start = SW corner + 10 m)
+        self.wet = (u(-10, 60), u(-10, 60), u(12, 25))                # x, y, radius (m)
+        self.acid = (u(-10, 60), u(-10, 60), u(12, 28), u(0.8, 1.5))  # x, y, radius, pH drop
+        a2 = u(0, math.pi)
+        self.strip = (u(0, 50), u(0, 50), math.cos(a2), math.sin(a2), u(5, 9), u(400, 900))  # point, dir, width, +EC
+        self.waves = [(u(12, 25), u(0, 2 * math.pi), u(0, 2 * math.pi)) for _ in range(3)]
+        self.bias = u(-0.1, 0.1)                                      # this probe's pH calibration offset
+        self.base = {"ph": u(6.1, 6.8), "ec_uScm": u(300, 550), "temp_c": u(13, 19), "moisture_pct": u(18, 28)}
+
+    def xy(self, lat, lon):
+        return (math.radians(lon - self.origin[1]) * R_EARTH * self.k,
+                math.radians(lat - self.origin[0]) * R_EARTH)
+
+    def truth(self, lat, lon):
+        x, y = self.xy(lat, lon)
+        dx, dy, tph, tmo, tte = self.trend
+        along = (x * dx + y * dy) / 100.0
+        v = dict(self.base)
+        v["ph"] += tph * along
+        v["moisture_pct"] += tmo * along
+        v["temp_c"] += tte * along
+        wx, wy, wr = self.wet
+        g = math.exp(-((x - wx) ** 2 + (y - wy) ** 2) / (2 * wr ** 2))
+        v["moisture_pct"] += 18 * g
+        v["ec_uScm"] += 350 * g
+        v["temp_c"] -= 1.5 * g
+        v["ph"] += 0.2 * g
+        ax, ay, ar, drop = self.acid
+        g = math.exp(-((x - ax) ** 2 + (y - ay) ** 2) / (2 * ar ** 2))
+        v["ph"] -= drop * g
+        v["ec_uScm"] -= 80 * g
+        sx, sy, ux, uy, w, dec = self.strip
+        off = (x - sx) * -uy + (y - sy) * ux            # distance across the strip
+        g = math.exp(-off ** 2 / (2 * w ** 2))
+        v["ec_uScm"] += dec * g
+        v["ph"] += 0.35 * g
+        for i, (lam, a, ph0) in enumerate(self.waves):
+            t = math.sin(2 * math.pi * (x * math.cos(a) + y * math.sin(a)) / lam + ph0)
+            v["ph"] += 0.08 * t
+            v["moisture_pct"] += 1.2 * t
+            v["ec_uScm"] += 30 * t
+        for key, (lo, hi) in SOIL_LIMITS.items():
+            v[key] = min(hi, max(lo, v[key]))
+        return v
+
+    def measure(self, lat, lon):
+        """What the probe reports at this spot, plus the truth it's trying to measure."""
+        t = self.truth(lat, lon)
+        out = {}
+        for key, (res, sigma) in SENSOR.items():
+            m = t[key] + random.gauss(0, sigma) + (self.bias if key == "ph" else 0.0)
+            lo, hi = SOIL_LIMITS[key]
+            m = min(hi, max(lo, m))
+            out[key] = int(round(m)) if res == 1 else round(round(m / res) * res, 1)
+            out["true_" + key] = int(round(t[key])) if res == 1 else round(t[key], 2)
+        return out
 
 
 # ---------------------------------------------------------------- who is driving
@@ -1259,7 +1351,7 @@ def _no_nan(name):
 
 SIM_CMDS = {"start", "stop", "resume", "skip", "come_home", "set_points", "grid", "add_obstacle", "set_corners", "set_start",
             "remove_obstacle", "clear_obstacles", "gps_error", "fast_probe", "speed", "reset",
-            "reset_all", "restart_sitl"}
+            "reset_all", "restart_sitl", "new_soil"}
 ADMIN_CMDS = {"restart_sitl"}
 
 
@@ -1321,6 +1413,24 @@ def make_handler(sim, control, auth, verifier=None, rate=10.0):
                 snap = sim.snapshot(since)
                 snap["control"] = control.info(who)
                 self.send(200, json.dumps(snap))
+            elif u.path == "/api/soil":
+                # the made-up "true" soil on a grid, for the page's "true field" heat map
+                q = parse_qs(u.query)
+                try:
+                    s_, w_, n_, e_ = (float(q[k][0]) for k in ("s", "w", "n", "e"))
+                    var = q.get("var", ["ph"])[0]
+                    nx = min(160, max(8, int(q.get("nx", ["100"])[0])))
+                    ny = min(160, max(8, int(q.get("ny", ["100"])[0])))
+                except (KeyError, ValueError):
+                    return self.send(400, '{"error":"need s, w, n, e"}')
+                soil = sim.soil_field()
+                if var not in SOIL_VARS or soil is None or not (s_ < n_ and w_ < e_) \
+                        or dist_m(s_, w_, n_, e_) > 3000:
+                    return self.send(400, '{"error":"bad request"}')
+                vals = [round(soil.truth(s_ + (n_ - s_) * (j + 0.5) / ny, w_ + (e_ - w_) * (i + 0.5) / nx)[var], 3)
+                        for j in range(ny) for i in range(nx)]
+                self.send(200, json.dumps({"seed": soil.seed, "var": var, "nx": nx, "ny": ny,
+                                           "s": s_, "w": w_, "n": n_, "e": e_, "values": vals}))
             elif u.path == "/api/points.csv":
                 rows = ["n,lat,lon"] + [f"{p['n']},{p['lat']:.7f},{p['lon']:.7f}" for p in sim.points]
                 self.send(200, "\n".join(rows) + "\n", "text/csv")
