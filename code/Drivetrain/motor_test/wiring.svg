@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 980" width="1500" height="980" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+<rect width="1500" height="980" fill="#ffffff"/>
+<text x="40" y="48" font-size="26" font-weight="bold" text-anchor="start" fill="#5D1725">D.I.R.T.T. drivetrain motor test: wiring</text>
+<text x="40" y="76" font-size="15" font-weight="normal" text-anchor="start" fill="#555">Arduino sends R/C pulses on D9/D10 → Cytron MDDRC10 (mode switch on MIX) → 2 motors per side in parallel</text>
+<rect x="600" y="170" width="330" height="560" rx="14" fill="#1d2125" stroke="#000" stroke-width="2"/>
+<text x="765.0" y="214" font-size="22" font-weight="bold" text-anchor="middle" fill="#ffffff">Cytron MDDRC10</text>
+<text x="765.0" y="238" font-size="14" font-weight="normal" text-anchor="middle" fill="#c9ced3">7–30 V, 10 A per side</text>
+<rect x="610" y="278" width="120" height="92" rx="4" fill="#2e7d32" stroke="#9be59b" stroke-width="1.5"/>
+<rect x="610" y="408" width="120" height="92" rx="4" fill="#2e7d32" stroke="#9be59b" stroke-width="1.5"/>
+<rect x="610" y="538" width="120" height="92" rx="4" fill="#2e7d32" stroke="#9be59b" stroke-width="1.5"/>
+<circle cx="626" cy="300" r="9" fill="#9be59b" stroke="#2c6b2c" stroke-width="2"/>
+<line x1="621" y1="295" x2="631" y2="305" stroke="#2c6b2c" stroke-width="2"/>
+<text x="644" y="305" font-size="14" font-weight="bold" text-anchor="start" fill="#1f2328">MRA</text>
+<circle cx="626" cy="345" r="9" fill="#9be59b" stroke="#2c6b2c" stroke-width="2"/>
+<line x1="621" y1="340" x2="631" y2="350" stroke="#2c6b2c" stroke-width="2"/>
+<text x="644" y="350" font-size="14" font-weight="bold" text-anchor="start" fill="#1f2328">MRB</text>
+<circle cx="626" cy="430" r="9" fill="#9be59b" stroke="#2c6b2c" stroke-width="2"/>
+<line x1="621" y1="425" x2="631" y2="435" stroke="#2c6b2c" stroke-width="2"/>
+<text x="644" y="435" font-size="14" font-weight="bold" text-anchor="start" fill="#1f2328">VB+</text>
+<circle cx="626" cy="475" r="9" fill="#9be59b" stroke="#2c6b2c" stroke-width="2"/>
+<line x1="621" y1="470" x2="631" y2="480" stroke="#2c6b2c" stroke-width="2"/>
+<text x="644" y="480" font-size="14" font-weight="bold" text-anchor="start" fill="#1f2328">VB−</text>
+<circle cx="626" cy="560" r="9" fill="#9be59b" stroke="#2c6b2c" stroke-width="2"/>
+<line x1="621" y1="555" x2="631" y2="565" stroke="#2c6b2c" stroke-width="2"/>
+<text x="644" y="565" font-size="14" font-weight="bold" text-anchor="start" fill="#1f2328">MLA</text>
+<circle cx="626" cy="605" r="9" fill="#9be59b" stroke="#2c6b2c" stroke-width="2"/>
+<line x1="621" y1="600" x2="631" y2="610" stroke="#2c6b2c" stroke-width="2"/>
+<text x="644" y="610" font-size="14" font-weight="bold" text-anchor="start" fill="#1f2328">MLB</text>
+<text x="740" y="327" font-size="13" font-weight="normal" text-anchor="start" fill="#c9ced3">RIGHT motors</text>
+<text x="740" y="457" font-size="13" font-weight="normal" text-anchor="start" fill="#c9ced3">POWER</text>
+<text x="740" y="587" font-size="13" font-weight="normal" text-anchor="start" fill="#c9ced3">LEFT motors</text>
+<rect x="886" y="304" width="28" height="198" rx="4" fill="#30353a" stroke="#f2c94c" stroke-width="1.5"/>
+<rect x="894" y="314" width="12" height="12" fill="#f2c94c" stroke="#7a5d00" stroke-width="1.5"/>
+<text x="886" y="325" font-size="13" font-weight="bold" text-anchor="end" fill="#ffffff">RC2</text>
+<rect x="894" y="342" width="12" height="12" fill="#f2c94c" stroke="#7a5d00" stroke-width="1.5"/>
+<text x="886" y="353" font-size="13" font-weight="bold" text-anchor="end" fill="#ffffff">+5V</text>
+<rect x="894" y="370" width="12" height="12" fill="#f2c94c" stroke="#7a5d00" stroke-width="1.5"/>
+<text x="886" y="381" font-size="13" font-weight="bold" text-anchor="end" fill="#ffffff">GND</text>
+<rect x="894" y="426" width="12" height="12" fill="#f2c94c" stroke="#7a5d00" stroke-width="1.5"/>
+<text x="886" y="437" font-size="13" font-weight="bold" text-anchor="end" fill="#ffffff">RC1</text>
+<rect x="894" y="454" width="12" height="12" fill="#f2c94c" stroke="#7a5d00" stroke-width="1.5"/>
+<text x="886" y="465" font-size="13" font-weight="bold" text-anchor="end" fill="#ffffff">+5V</text>
+<rect x="894" y="482" width="12" height="12" fill="#f2c94c" stroke="#7a5d00" stroke-width="1.5"/>
+<text x="886" y="493" font-size="13" font-weight="bold" text-anchor="end" fill="#ffffff">GND</text>
+<text x="900" y="290" font-size="13" font-weight="bold" text-anchor="end" fill="#c9ced3">RC input</text>
+<rect x="820" y="590" width="92" height="88" rx="4" fill="#30353a" stroke="#ffffff" stroke-width="1.5"/>
+<text x="866" y="612" font-size="14" font-weight="bold" text-anchor="middle" fill="#9be59b">MIX</text>
+<rect x="854" y="620" width="24" height="34" rx="3" fill="#ffffff"/>
+<rect x="857" y="623" width="18" height="14" rx="2" fill="#2e7d32"/>
+<text x="866" y="670" font-size="13" font-weight="normal" text-anchor="middle" fill="#c9ced3">IND</text>
+<text x="810" y="642" font-size="14" font-weight="bold" text-anchor="end" fill="#ffd166">Set to MIX →</text>
+<text x="624" y="690" font-size="12" font-weight="normal" text-anchor="start" fill="#c9ced3">ERR LED: 2 blinks = no pulses</text>
+<text x="624" y="708" font-size="12" font-weight="normal" text-anchor="start" fill="#c9ced3">3 = low battery, 4 = over-voltage</text>
+<rect x="150" y="130" width="120" height="64" rx="8" fill="#c9ced3" stroke="#4a4f55" stroke-width="2"/>
+<rect x="270" y="138" width="50" height="48" rx="4" fill="#a6adb4" stroke="#4a4f55" stroke-width="2"/>
+<rect x="128" y="157" width="22" height="10" fill="#6c737a"/>
+<text x="210" y="160" font-size="13" font-weight="bold" text-anchor="middle" fill="#1f2328">FIT0185</text>
+<text x="210" y="179" font-size="13" font-weight="normal" text-anchor="middle" fill="#1f2328">Front-right</text>
+<rect x="150" y="250" width="120" height="64" rx="8" fill="#c9ced3" stroke="#4a4f55" stroke-width="2"/>
+<rect x="270" y="258" width="50" height="48" rx="4" fill="#a6adb4" stroke="#4a4f55" stroke-width="2"/>
+<rect x="128" y="277" width="22" height="10" fill="#6c737a"/>
+<text x="210" y="280" font-size="13" font-weight="bold" text-anchor="middle" fill="#1f2328">FIT0185</text>
+<text x="210" y="299" font-size="13" font-weight="normal" text-anchor="middle" fill="#1f2328">Rear-right</text>
+<rect x="150" y="560" width="120" height="64" rx="8" fill="#c9ced3" stroke="#4a4f55" stroke-width="2"/>
+<rect x="270" y="568" width="50" height="48" rx="4" fill="#a6adb4" stroke="#4a4f55" stroke-width="2"/>
+<rect x="128" y="587" width="22" height="10" fill="#6c737a"/>
+<text x="210" y="590" font-size="13" font-weight="bold" text-anchor="middle" fill="#1f2328">FIT0185</text>
+<text x="210" y="609" font-size="13" font-weight="normal" text-anchor="middle" fill="#1f2328">Front-left</text>
+<rect x="150" y="680" width="120" height="64" rx="8" fill="#c9ced3" stroke="#4a4f55" stroke-width="2"/>
+<rect x="270" y="688" width="50" height="48" rx="4" fill="#a6adb4" stroke="#4a4f55" stroke-width="2"/>
+<rect x="128" y="707" width="22" height="10" fill="#6c737a"/>
+<text x="210" y="710" font-size="13" font-weight="bold" text-anchor="middle" fill="#1f2328">FIT0185</text>
+<text x="210" y="729" font-size="13" font-weight="normal" text-anchor="middle" fill="#1f2328">Rear-left</text>
+<path d="M320,152 L420,152" fill="none" stroke="#d62828" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M320,172 L450,172" fill="none" stroke="#222222" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M320,272 L420,272" fill="none" stroke="#d62828" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M320,292 L450,292" fill="none" stroke="#222222" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M420,152 L420,272" fill="none" stroke="#d62828" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M450,172 L450,292" fill="none" stroke="#222222" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M420,212.0 L490,212.0 L490,300 L616,300" fill="none" stroke="#d62828" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M450,262.0 L520,262.0 L520,345 L616,345" fill="none" stroke="#222222" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="420" cy="212.0" r="6" fill="#d62828"/>
+<circle cx="450" cy="262.0" r="6" fill="#222222"/>
+<path d="M320,582 L420,582" fill="none" stroke="#d62828" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M320,602 L450,602" fill="none" stroke="#222222" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M320,702 L420,702" fill="none" stroke="#d62828" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M320,722 L450,722" fill="none" stroke="#222222" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M420,582 L420,702" fill="none" stroke="#d62828" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M450,602 L450,722" fill="none" stroke="#222222" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M420,642.0 L490,642.0 L490,560 L616,560" fill="none" stroke="#d62828" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M450,692.0 L520,692.0 L520,605 L616,605" fill="none" stroke="#222222" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="420" cy="642.0" r="6" fill="#d62828"/>
+<circle cx="450" cy="692.0" r="6" fill="#222222"/>
+<text x="150" y="118" font-size="14" font-weight="bold" text-anchor="start" fill="#5D1725">RIGHT SIDE</text>
+<text x="150" y="548" font-size="14" font-weight="bold" text-anchor="start" fill="#5D1725">LEFT SIDE</text>
+<text x="150" y="770" font-size="12.5" font-weight="normal" text-anchor="start" fill="#555">Motor leads: the 2 thick wires (usually red +, black −). Both motors on a side are wired the same.</text>
+<text x="150" y="788" font-size="12.5" font-weight="normal" text-anchor="start" fill="#555">Encoder wires (the 4 thin ones) aren't used for this test: tape them off. Side runs backwards? Swap its pair at the driver.</text>
+<rect x="170" y="410" width="170" height="96" rx="8" fill="#30353a" stroke="#000" stroke-width="2"/>
+<rect x="192" y="398" width="26" height="12" fill="#d62828"/>
+<rect x="340" y="462" width="12" height="26" fill="#222222"/>
+<text x="255" y="452" font-size="16" font-weight="bold" text-anchor="middle" fill="#ffffff">12 V battery</text>
+<text x="255" y="474" font-size="13" font-weight="normal" text-anchor="middle" fill="#c9ced3">8 Ah AGM (demo)</text>
+<text x="205" y="496" font-size="18" font-weight="bold" text-anchor="middle" fill="#ff8a8a">+</text>
+<text x="325" y="481" font-size="18" font-weight="bold" text-anchor="middle" fill="#ffffff">−</text>
+<path d="M205,398 L205,375 L278,375" fill="none" stroke="#d62828" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="278" y="362" width="44" height="26" rx="4" fill="#fff3c4" stroke="#7a5d00" stroke-width="2"/>
+<text x="300" y="380" font-size="12" font-weight="bold" text-anchor="middle" fill="#1f2328">15 A</text>
+<text x="300" y="355" font-size="12" font-weight="normal" text-anchor="middle" fill="#555">fuse</text>
+<path d="M322,375 L452,375" fill="none" stroke="#d62828" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="456" cy="375" r="4" fill="#1f2328"/><circle cx="484" cy="375" r="4" fill="#1f2328"/>
+<line x1="456" y1="375" x2="482" y2="359" stroke="#1f2328" stroke-width="3"/>
+<text x="470" y="401" font-size="12" font-weight="normal" text-anchor="middle" fill="#555">power switch / E-stop</text>
+<path d="M488,375 L560,375 L560,430 L616,430" fill="none" stroke="#d62828" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M352,475 L616,475" fill="none" stroke="#222222" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="1140" y="300" width="290" height="330" rx="14" fill="#0b6e8c" stroke="#06485c" stroke-width="2"/>
+<text x="1285.0" y="340" font-size="20" font-weight="bold" text-anchor="middle" fill="#ffffff">Arduino Uno / Nano</text>
+<text x="1285.0" y="362" font-size="14" font-weight="normal" text-anchor="middle" fill="#cfe9f2">motor_test.ino</text>
+<rect x="1154" y="414" width="12" height="12" fill="#f2c94c" stroke="#7a5d00" stroke-width="1.5"/>
+<text x="1174" y="425" font-size="13" font-weight="bold" text-anchor="start" fill="#1f2328">D9</text>
+<rect x="1154" y="469" width="12" height="12" fill="#f2c94c" stroke="#7a5d00" stroke-width="1.5"/>
+<text x="1174" y="480" font-size="13" font-weight="bold" text-anchor="start" fill="#1f2328">D10</text>
+<rect x="1154" y="524" width="12" height="12" fill="#f2c94c" stroke="#7a5d00" stroke-width="1.5"/>
+<text x="1174" y="535" font-size="13" font-weight="bold" text-anchor="start" fill="#1f2328">GND</text>
+<rect x="1422" y="540" width="28" height="40" rx="3" fill="#c9ced3" stroke="#4a4f55"/>
+<text x="1410" y="530" font-size="13" font-weight="bold" text-anchor="end" fill="#ffffff">USB</text>
+<path d="M1450,560 L1470,560 L1470,700 L1370,700" fill="none" stroke="#8a8f94" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="1160" y="670" width="190" height="70" rx="8" fill="#eef0f1" stroke="#8a8f94" stroke-width="2"/>
+<text x="1255" y="700" font-size="15" font-weight="bold" text-anchor="middle" fill="#1f2328">Laptop</text>
+<text x="1255" y="722" font-size="12" font-weight="normal" text-anchor="middle" fill="#555">power + Serial Monitor 9600</text>
+<path d="M1160,420 L1070,420 L1070,432 L900,432" fill="none" stroke="#e07a00" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1160,475 L1030,475 L1030,320 L900,320" fill="none" stroke="#1f6fd1" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1160,530 L990,530 L990,488 L900,488" fill="none" stroke="#222222" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="990" y="170" font-size="14" font-weight="bold" text-anchor="start" fill="#1f2328">Signal wires (any jumper wire)</text>
+<path d="M990,192 L1024,192" fill="none" stroke="#e07a00" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1034" y="197" font-size="13" font-weight="normal" text-anchor="start" fill="#1f2328">D9 → RC1: forward / back (throttle)</text>
+<path d="M990,214 L1024,214" fill="none" stroke="#1f6fd1" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1034" y="219" font-size="13" font-weight="normal" text-anchor="start" fill="#1f2328">D10 → RC2: turn left / right</text>
+<path d="M990,236 L1024,236" fill="none" stroke="#222222" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1034" y="241" font-size="13" font-weight="normal" text-anchor="start" fill="#1f2328">GND → RC GND (shared ground)</text>
+<line x1="910" y1="460" x2="940" y2="460" stroke="#8a8f94" stroke-width="2" stroke-dasharray="4 4"/>
+<text x="944" y="465" font-size="16" font-weight="bold" fill="#d62828">×</text>
+<line x1="910" y1="348" x2="940" y2="348" stroke="#8a8f94" stroke-width="2" stroke-dasharray="4 4"/>
+<text x="944" y="353" font-size="16" font-weight="bold" fill="#d62828">×</text>
+<text x="950" y="585" font-size="12.5" font-weight="bold" text-anchor="start" fill="#d62828">+5V pins: not connected</text>
+<text x="950" y="602" font-size="12.5" font-weight="normal" text-anchor="start" fill="#555">(Arduino runs off USB)</text>
+<rect x="40" y="820" width="1420" height="140" rx="6" fill="#f7f7f5" stroke="#C1C6C8" stroke-width="1.5"/>
+<text x="60" y="850" font-size="16" font-weight="bold" text-anchor="start" fill="#5D1725">Power-up order</text>
+<text x="60" y="878" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">1. Rover on blocks, wheels off the ground. Driver switch on MIX. Power switch OFF.</text>
+<text x="60" y="900" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">2. Plug the Arduino into the laptop, upload motor_test.ino, open Serial Monitor (9600 baud).</text>
+<text x="60" y="922" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">3. Switch on the 12 V. The driver takes the Arduino's 1500 µs "stop" pulse as its neutral point at power-up,</text>
+<text x="60" y="944" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">    so the Arduino must already be running. Then type  test  (or w / s / a / d, x to stop).</text>
+<text x="1440" y="948" font-size="12.5" font-weight="normal" text-anchor="end" fill="#555">Wire gauge: 16 AWG for battery and motor leads, any jumper wire for signals.</text>
+</svg>
