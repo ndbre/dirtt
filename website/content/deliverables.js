@@ -49,6 +49,7 @@ const deliverableGroups = [
         title: "Final Design Review",
         folder: "FDR",
         versions: [
+            { date: "2026-11-20", formats: ["pptx", "pdf"] },
             { date: "2026-11-17", formats: ["pptx", "pdf"] },
             { date: "2026-11-15", formats: ["pptx", "pdf"] }
         ]
