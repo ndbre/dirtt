@@ -115,6 +115,17 @@ details { margin-top: 8px; } summary { cursor: pointer; color: var(--text); font
 .leaflet-popup-content-wrapper { border-radius: 0; } .leaflet-popup-content { margin: 10px 12px; }
 .pop b { color: var(--maroon); } .pop .row { margin: 8px 0 0; }
 
+/* soil readings */
+.pt.soil { color: #111; border-color: #fff; }
+.legend-bar { height: 12px; border: 1px solid var(--light-grey); margin-top: 6px; }
+.legend-ticks { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--dark-grey); font-variant-numeric: tabular-nums; }
+.soil-tip { font: 12.5px/1.45 -apple-system, "Segoe UI", Roboto, sans-serif; }
+.soil-tip b { color: var(--maroon); }
+.soil-tip table { border-collapse: collapse; margin-top: 4px; }
+.soil-tip td { padding: 1px 6px 1px 0; border: 0; text-align: left; font-variant-numeric: tabular-nums; }
+.soil-tip td.k { color: var(--dark-grey); } .soil-tip td.t { color: var(--dark-grey); font-size: 11.5px; }
+.soil-tip td.off { color: var(--red); font-weight: 600; }
+.leaflet-tooltip.soil-tooltip { border-radius: 0; border-color: var(--light-grey); }
 @media (max-width: 900px) {
   #app { grid-template-columns: 1fr; grid-template-rows: 55vh auto; height: auto; }
   #map { height: 55vh; } #panel { border-left: 0; border-top: 1px solid var(--light-grey); }
@@ -249,6 +260,21 @@ details { margin-top: 8px; } summary { cursor: pointer; color: var(--text); font
     </div>
 
     <div class="card">
+      <h2>Soil readings</h2>
+      <div class="row" style="margin-top:0"><span class="lbl">Show</span><span class="seg" id="soilvar">
+        <button data-v="ph" class="on">pH</button><button data-v="ec_uScm">EC</button><button data-v="temp_c">Temp</button><button data-v="moisture_pct">Moisture</button>
+      </span></div>
+      <div class="row"><span class="lbl">Heat map</span><span class="seg" id="heatmode">
+        <button data-v="off">Off</button><button data-v="samples" class="on">From samples</button><button data-v="true">True soil</button>
+      </span></div>
+      <div class="legend-bar" id="legendbar"></div>
+      <div class="legend-ticks" id="legendticks"></div>
+      <div class="hint" id="soilhint">Hover (or tap) a sampled point to see its readings. The probe's readings are made up from a simulated field with SEN0604-like sensor error.</div>
+      <div class="row"><button class="small" id="b-newsoil" title="Make a new random soil layout (clears the readings)">New soil</button>
+        <span class="lbl" id="soilseed"></span></div>
+    </div>
+
+    <div class="card">
       <div class="row" style="margin:0 0 8px; justify-content:space-between;"><h2 style="margin:0">NV2 · arrival accuracy</h2><span id="nv2" class="badge na">no data</span></div>
       <div id="summary" class="hint" style="margin:0 0 8px"></div>
       <table><thead><tr><th>#</th><th>Status</th><th>Pi err</th><th>True err</th><th>pH</th></tr></thead><tbody id="results"></tbody></table>
@@ -292,6 +318,7 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/
 }).addTo(map);
 L.control.scale({imperial: false, maxWidth: 160}).addTo(map);
 
+map.createPane('heat'); map.getPane('heat').style.zIndex = 350; map.getPane('heat').style.pointerEvents = 'none';
 const layers = {
   outline: L.polygon([], {color: '#ffd166', weight: 2, dashArray: '8 6', fillColor: '#ffd166', fillOpacity: .08, interactive: false}).addTo(map),
   field: L.polygon([], {color: '#fff', weight: 2, dashArray: '6 6', fill: false, interactive: false}).addTo(map),
@@ -429,6 +456,141 @@ $('spd').oninput = () => {
 document.querySelectorAll('[data-s]').forEach(b => b.onclick = () => post({cmd: 'speed', value: parseFloat(b.dataset.s)}));
 $('fastprobe').onchange = () => post({cmd: 'fast_probe', on: $('fastprobe').checked});
 
+// ---------------------------------------------------------------- soil readings
+const SOIL = {
+  ph:           {label: 'pH', unit: '', dp: 1, min: 4.5, max: 8.0,
+                 stops: ['#d73027', '#fc8d59', '#fee08b', '#d9ef8b', '#91cf60', '#4575b4', '#313695'],
+                 ticks: ['4.5 acidic', '6.0', '7.0 neutral', '8.0']},
+  ec_uScm:      {label: 'EC', unit: ' µS/cm', dp: 0, min: 0, max: 1500,
+                 stops: ['#fff7bc', '#fec44f', '#fe9929', '#d95f0e', '#662506'], ticks: ['0', '500', '1000', '1500 µS/cm']},
+  temp_c:       {label: 'Temp', unit: ' °C', dp: 1, min: 5, max: 30,
+                 stops: ['#2c7bb6', '#abd9e9', '#ffffbf', '#fdae61', '#d7191c'], ticks: ['5', '12', '18', '24', '30 °C']},
+  moisture_pct: {label: 'Moisture', unit: ' %', dp: 1, min: 5, max: 50,
+                 stops: ['#e6d5ac', '#b8e0d2', '#4fb3bf', '#1f78b4', '#08306b'], ticks: ['5 dry', '20', '35', '50 % wet']},
+};
+let soilVar = 'ph', heatMode = 'samples';
+const hex2rgb = (h) => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+function soilRGB(v, key) {
+  const c = SOIL[key], st = c.stops.map(hex2rgb);
+  let t = Math.min(1, Math.max(0, (v - c.min) / (c.max - c.min))) * (st.length - 1);
+  const i = Math.min(st.length - 2, Math.floor(t)); t -= i;
+  return st[i].map((a, k) => Math.round(a + (st[i + 1][k] - a) * t));
+}
+const soilColor = (v, key) => `rgb(${soilRGB(v, key).join(',')})`;
+const fmtSoil = (v, key) => (v === '' || v == null) ? '–' : (+v).toFixed(SOIL[key].dp) + SOIL[key].unit;
+const okResult = (n) => S.results.filter(r => r.n === n && r.status === 'OK').pop();
+
+function soilTip(p, r) {
+  if (!r) {
+    const any = S.results.filter(x => x.n === p.n).pop();
+    return `<div class="soil-tip"><b>Point ${p.n}</b><br>${any ? any.status.toLowerCase() + ', no reading' : 'not sampled yet'}</div>`;
+  }
+  const rows = Object.keys(SOIL).map(k => {
+    const err = r[k] - r['true_' + k];
+    const off = k === 'ph' && Math.abs(err) > 0.5;
+    return `<tr><td class="k">${SOIL[k].label}</td><td${off ? ' class="off"' : ''}>${fmtSoil(r[k], k)}</td>` +
+           `<td class="t">true ${fmtSoil(r['true_' + k], k)} (${err >= 0 ? '+' : '−'}${Math.abs(err).toFixed(SOIL[k].dp)})</td></tr>`;
+  }).join('');
+  return `<div class="soil-tip"><b>Point ${p.n}</b> · ${r.time}<table>${rows}</table>` +
+         `<span class="t" style="color:#777">Probe ${r.true_error_m.toFixed(2)} m from the point (GPS said ${r.error_m.toFixed(2)} m)</span></div>`;
+}
+
+function drawLegend() {
+  const c = SOIL[soilVar];
+  $('legendbar').style.background = `linear-gradient(to right, ${c.stops.join(',')})`;
+  const t = $('legendticks'); t.textContent = '';
+  c.ticks.forEach(x => t.appendChild(el('span', null, x)));
+  document.querySelectorAll('#soilvar button').forEach(b => b.classList.toggle('on', b.dataset.v === soilVar));
+  document.querySelectorAll('#heatmode button').forEach(b => b.classList.toggle('on', b.dataset.v === heatMode));
+}
+
+// heat map: a canvas image over the field. "From samples" = inverse-distance interpolation of the
+// readings (what the base station could draw); "True soil" = the simulated truth from /api/soil.
+let heatLayer = null, heatSig = '', trueGrid = null, trueGridSig = '', trueGridBusy = false;
+function heatArea() {
+  const poly = (S.corners && S.corners.length >= 3) ? S.corners : (S.field && S.field.length >= 3 ? S.field : null);
+  const pts = poly || S.results.filter(r => r.status === 'OK').map(r => [r.lat, r.lon]);
+  if (!pts.length) return null;
+  let s = Math.min(...pts.map(p => p[0])), n = Math.max(...pts.map(p => p[0]));
+  let w = Math.min(...pts.map(p => p[1])), e = Math.max(...pts.map(p => p[1]));
+  if (!poly) { const d = 10 / 111320, k = Math.cos(s * Math.PI / 180); s -= d; n += d; w -= d / k; e += d / k; }
+  return {s, w, n, e, poly};
+}
+function paintHeat(area, nx, ny, valueAt) {
+  const cv = document.createElement('canvas'); cv.width = nx; cv.height = ny;
+  const g = cv.getContext('2d'), img = g.createImageData(nx, ny);
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+    const v = valueAt(i, j);
+    if (v == null) continue;
+    const [r, gg, b] = soilRGB(v, soilVar), o = 4 * (j * nx + i);
+    img.data[o] = r; img.data[o + 1] = gg; img.data[o + 2] = b; img.data[o + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  if (area.poly) {                                    // keep only the inside of the field
+    g.globalCompositeOperation = 'destination-in';
+    g.beginPath();
+    area.poly.forEach(([la, lo], k) => {
+      const x = (lo - area.w) / (area.e - area.w) * nx, y = (area.n - la) / (area.n - area.s) * ny;
+      k ? g.lineTo(x, y) : g.moveTo(x, y);
+    });
+    g.closePath(); g.fill();
+  }
+  if (heatLayer) heatLayer.remove();
+  heatLayer = L.imageOverlay(cv.toDataURL(), [[area.s, area.w], [area.n, area.e]],
+                             {opacity: 0.55, pane: 'heat', interactive: false}).addTo(map);
+}
+function gridSize(area) {
+  const k = Math.cos(area.s * Math.PI / 180), hm = (area.n - area.s) * 111320, wm = (area.e - area.w) * 111320 * k;
+  const nx = Math.max(16, Math.min(140, Math.round(wm))), ny = Math.max(16, Math.min(140, Math.round(nx * hm / Math.max(wm, 1))));
+  return [nx, ny];
+}
+async function refreshHeat() {
+  const area = heatMode === 'off' ? null : heatArea();
+  const samples = S.results.filter(r => r.status === 'OK' && r[soilVar] !== '');
+  const sig = [heatMode, soilVar, S.soil_seed, JSON.stringify(area), samples.length].join('|');
+  if (sig === heatSig) return;
+  heatSig = sig;
+  if (!area || (heatMode === 'samples' && samples.length < 3)) {
+    if (heatLayer) { heatLayer.remove(); heatLayer = null; }
+    $('soilhint').textContent = heatMode === 'samples' && area
+      ? `The heat map appears after 3 sampled points (${samples.length} so far). Hover a sampled point for its readings.`
+      : 'Hover (or tap) a sampled point to see its readings.';
+    return;
+  }
+  const [nx, ny] = gridSize(area);
+  if (heatMode === 'samples') {
+    const k = Math.cos(area.s * Math.PI / 180);
+    const xy = samples.map(r => [(r.lon - area.w) * 111320 * k, (r.lat - area.s) * 111320, +r[soilVar]]);
+    const cw = (area.e - area.w) * 111320 * k / nx, ch = (area.n - area.s) * 111320 / ny;
+    paintHeat(area, nx, ny, (i, j) => {
+      const x = (i + 0.5) * cw, y = (ny - j - 0.5) * ch;
+      let num = 0, den = 0;
+      for (const [sx, sy, v] of xy) {
+        const wgt = 1 / ((x - sx) ** 2 + (y - sy) ** 2 + 9);   // +9 m²: softens the bull's-eyes round each point
+        num += wgt * v; den += wgt;
+      }
+      return num / den;
+    });
+    $('soilhint').textContent = `Interpolated from ${samples.length} readings, like the base station's field map. Hover a sampled point for its readings.`;
+  } else {
+    const gsig = [S.soil_seed, soilVar, area.s, area.w, area.n, area.e, nx, ny].join('|');
+    if (gsig !== trueGridSig && !trueGridBusy) {
+      trueGridBusy = true;
+      try {
+        const q = new URLSearchParams({var: soilVar, s: area.s, w: area.w, n: area.n, e: area.e, nx, ny});
+        const r = await fetch('/api/soil?' + q, {credentials: 'same-origin'});
+        if (r.ok) { trueGrid = await r.json(); trueGridSig = gsig; }
+      } finally { trueGridBusy = false; }
+    }
+    if (trueGridSig !== gsig) { heatSig = ''; return; }      // try again next poll
+    paintHeat(area, nx, ny, (i, j) => trueGrid.values[(ny - 1 - j) * nx + i]);
+    $('soilhint').textContent = 'The simulated "true" soil the probe is measuring. Compare with From samples to see what the grid spacing catches.';
+  }
+}
+document.querySelectorAll('#soilvar button').forEach(b => b.onclick = () => { soilVar = b.dataset.v; drawLegend(); ptsSig = ''; if (S) { refreshPoints(true); refreshHeat(); } });
+document.querySelectorAll('#heatmode button').forEach(b => b.onclick = () => { heatMode = b.dataset.v; drawLegend(); if (S) refreshHeat(); });
+$('b-newsoil').onclick = () => { if (confirm('Make a new random soil layout? The current readings are cleared.')) post({cmd: 'new_soil'}); };
+
 // ---------------------------------------------------------------- drawing
 const keepout = (o) => o.r + (S.keepout_extra || 0);
 const blockedBy = (lat, lon) => S.obstacles.find(o => distM([lat, lon], [o.lat, o.lon]) < keepout(o) - 0.5);
@@ -441,14 +603,18 @@ function statusOf(n) {
 
 function refreshPoints(force) {
   if (!S) return;
-  const sig = JSON.stringify(S.points) + JSON.stringify(S.obstacles) + S.keepout_extra + tool + canEdit();
+  const sig = JSON.stringify(S.points) + JSON.stringify(S.obstacles) + S.keepout_extra + tool + canEdit()
+            + soilVar + S.results.length + S.soil_seed;
   if (force || sig !== ptsSig) {
     ptsSig = sig;
     layers.points.clearLayers(); ptMarkers.length = 0;
     const edit = tool === 'points' && canEdit();
     S.points.forEach((p, i) => {
-      const m = L.marker([p.lat, p.lon], {draggable: edit, interactive: edit,
-        icon: L.divIcon({className: '', iconSize: [24, 24], iconAnchor: [12, 12], html: `<div class="pt">${p.n}</div>`})});
+      const r = okResult(p.n);
+      const fill = r ? ` style="background:${soilColor(r[soilVar], soilVar)}"` : '';
+      const m = L.marker([p.lat, p.lon], {draggable: edit, interactive: true, zIndexOffset: r ? 100 : 0,
+        icon: L.divIcon({className: '', iconSize: [24, 24], iconAnchor: [12, 12], html: `<div class="pt${r ? ' soil' : ''}"${fill}>${p.n}</div>`})});
+      if (!edit) m.bindTooltip(() => soilTip(p, okResult(p.n)), {direction: 'top', offset: [0, -12], className: 'soil-tooltip', opacity: 1});
       if (edit) {
         m.on('dragend', () => { const pts = ptsLL(); const ll = m.getLatLng(); pts[i] = {lat: ll.lat, lon: ll.lng}; post({cmd: 'set_points', points: pts}); });
         m.on('click', () => popup(m.getLatLng(), `Sample point <b>${p.n}</b>`, [['Delete point', () => delPoint(i), 'primary']]));
@@ -472,7 +638,7 @@ function refreshPoints(force) {
   }
   S.points.forEach((p, i) => {
     const e = ptMarkers[i] && ptMarkers[i].getElement();
-    if (e) e.firstChild.className = 'pt ' + statusOf(p.n) + (blockedBy(p.lat, p.lon) && !statusOf(p.n) ? ' blocked' : '');
+    if (e && !okResult(p.n)) e.firstChild.className = 'pt ' + statusOf(p.n) + (blockedBy(p.lat, p.lon) && !statusOf(p.n) ? ' blocked' : '');
   });
 }
 
@@ -652,7 +818,9 @@ function render() {
     layers.estTrack.setLatLngs(estPts); layers.trueTrack.setLatLngs(truePts);
   }
   trackLen = S.track_len;
-  refreshPoints(false); refreshCorners(false); refreshObstacles(); drawLidar();
+  refreshPoints(false); refreshCorners(false); refreshObstacles(); drawLidar(); refreshHeat();
+  $('b-newsoil').disabled = !edit;
+  $('soilseed').textContent = S.soil_seed ? `layout #${S.soil_seed}` : '';
 
   // results
   const st = S.stats;
@@ -696,6 +864,7 @@ async function poll() {
   setTimeout(poll, driving ? 250 : 500);
 }
 setTool('pan');
+drawLegend();
 poll();
 </script>
 </body>
