@@ -47,6 +47,8 @@ POS_MASK = 0b110111111000                  # SET_POSITION_TARGET: position only
 STOPPED_S = 3.0                            # "not moving" = < 0.2 m in this long
 STUCK_S = 30.0                             # no 1 m of progress toward the point in this long = stuck
 TRACK_PERIOD_S = 0.5
+MAX_TRACK_POINTS = 20000                   # in memory for the page (~2.8 h of driving); CSVs keep it all
+TRACK_STATES = ("DRIVING", "PROBING", "HOMING", "STOPPED", "PAUSED")   # record the path only during a survey
 FENCE_PAD_M = 8.0                          # field boundary = points + home, padded by this
 PROBE_REAL = (("settle", 2.0), ("probe down", 15.0), ("reading sensor", 5.0), ("probe up", 15.0))
 PROBE_FAST = (("settle", 1.0), ("probe down", 2.0), ("reading sensor", 1.0), ("probe up", 2.0))
@@ -172,6 +174,7 @@ class Sim:
         self.results = []
         self.log_lines = collections.deque(maxlen=200)
         self.track = []            # [(t, est_lat, est_lon, true_lat, true_lon)]
+        self.track_base = 0        # points trimmed off the front of self.track (keeps indices absolute)
         self.next_track = 0.0
         self.warnings = []
         self.arrive_m = 1.5
@@ -218,7 +221,9 @@ class Sim:
                 "speed_set": self.wp_speed, "speed_range": SPEED_RANGE,
                 "corners": self.corners, "can_move_start": bool(self.home_file and self.restart_cmd),
                 "results": self.results, "log": list(self.log_lines)[-80:],
-                "track_from": since, "track": self.track[since:], "track_len": len(self.track),
+                "track_from": self.track_base + max(0, since - self.track_base),
+                "track": self.track[max(0, since - self.track_base):],
+                "track_len": self.track_base + len(self.track),
                 "lidar": self.lidar, "warnings": self.warnings, "fence_status": self.fence_status,
                 "stats": {"planned": len(self.points), "sampled": len(ok),
                           "skipped": sum(r["status"] != "OK" for r in self.results),
@@ -407,10 +412,16 @@ class Sim:
         if self.connected and now_s() - self.last_hb > 5:
             self.connected = False
             self.log("Lost the SITL heartbeat")
-        if self.est and self.true and now_s() >= self.next_track:
+        if self.est and self.true and now_s() >= self.next_track and self.state in TRACK_STATES:
+            # Only while a survey runs: recording an idle rover forever made the list grow without
+            # bound, and a fresh page then downloaded (and drew) hours of the same point.
             with self.lock:
                 self.track.append((round(now_s(), 2), round(self.est[0], 7), round(self.est[1], 7),
                                    round(self.true[0], 7), round(self.true[1], 7)))
+                if len(self.track) > MAX_TRACK_POINTS:
+                    cut = MAX_TRACK_POINTS // 4
+                    del self.track[:cut]
+                    self.track_base += cut
             if self.track_w:
                 self.track_w.writerow([f"{now_s():.2f}", f"{self.est[0]:.7f}", f"{self.est[1]:.7f}",
                                        self.mode, f"{self.true[0]:.7f}", f"{self.true[1]:.7f}"])
