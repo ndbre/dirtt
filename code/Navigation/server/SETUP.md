@@ -102,6 +102,7 @@ Make a grid and run a survey to check that everything works, then press Ctrl+C.
 | Update the sim code | `cd ~/dirtt && git pull && pkill -f nav_sim.py` (the supervisor restarts it with the new code) |
 | Restart the simulator | Admins: **Restart SITL** button. Or `pkill -x ardurover` |
 | Change where the rover starts | **Start** tool on the page, or edit `~/dirtt-sim-run/home_location` (`lat,lon,alt,heading`) and restart the simulator. Delete the file to go back to `HOME_LOCATION` |
+| Site shows Cloudflare error 1033 | The tunnel isn't connected. `tail ~/dirtt-sim-run/logs/tunnel.log`; the task restarts a stopped sim within 10 min. `wsl --shutdown` then `Start-ScheduledTask -TaskName "DIRTT nav sim"` resets WSL's networking |
 | Update `start_sim.sh` itself | `git pull`, then `pkill -f start_sim.sh` in Ubuntu and `Start-ScheduledTask -TaskName "DIRTT nav sim"` in PowerShell |
 | See what's happening | `tail -f ~/dirtt-sim-run/logs/nav.log` (also `sitl.log`, `tunnel.log`, `supervisor.log`) |
 | Add/remove people | Zero Trust → Access → Applications → DIRTT nav sim → policy emails |

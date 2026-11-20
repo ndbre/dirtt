@@ -49,7 +49,9 @@ nav() { cd "$NAV" && exec python3 nav_sim.py --connect tcp:127.0.0.1:5760 --host
            --auth "$AUTH" ${ACCESS_TEAM:+--access-team "$ACCESS_TEAM"} ${ACCESS_AUD:+--access-aud "$ACCESS_AUD"} \
            --admins "$ADMINS" --logs "$RUN/runs" --restart-cmd "pkill -x ardurover" \
            --home-file "$RUN/home_location"; }
-tunnel() { exec cloudflared tunnel --no-autoupdate run --token "$TUNNEL_TOKEN"; }
+# http2 (TCP) rather than QUIC (UDP): QUIC from inside WSL can stop connecting ("failed to dial to
+# edge with quic: timeout") after the PC's network changes; TCP keeps working.
+tunnel() { exec cloudflared tunnel --no-autoupdate --protocol "${TUNNEL_PROTOCOL:-http2}" run --token "$TUNNEL_TOKEN"; }
 
 trap 'kill 0' EXIT INT TERM
 supervise sitl sitl &
