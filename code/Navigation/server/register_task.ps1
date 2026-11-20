@@ -23,6 +23,10 @@ $action = New-ScheduledTaskAction -Execute "$env:WINDIR\System32\conhost.exe" `
 $atBoot = New-ScheduledTaskTrigger -AtStartup
 $atBoot.Delay = "PT1M"                       # give networking a minute after boot
 $atLogon = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
+# Watchdog: also try every 10 minutes. If the sim is already running the task is skipped
+# (MultipleInstances IgnoreNew, and start_sim.sh refuses a second copy), so this only restarts it
+# after a crash, an update restart of WSL, or a "pkill -f start_sim.sh".
+$atLogon.Repetition = (New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 10)).Repetition
 
 $settings = New-ScheduledTaskSettingsSet `
     -ExecutionTimeLimit ([TimeSpan]::Zero) `
