@@ -9,11 +9,13 @@ What changed from v1 (DIRTT_probe_holder.stl):
       * two M4 x 25 bolts across the bottom, under the ends of the sensor body: it can't slide out
         when the probe is pulled out of the soil
       * two M4 x 12-16 pinch bolts from the back: take up any slack so it doesn't rattle
-  - Same sensor pocket as v1 (45.6 x 15.6 mm, 30 mm deep), which the team says fits.
+  - Same sensor pocket cross-section as v1 (45.6 x 15.6 mm), which the team says fits, but the
+    sleeve now covers the whole 60 mm body (v1 covered the top 30 mm), so the cross bolts can
+    sit under the body's real bottom face.
   - Everything fits inside the tower's base opening (x +/-31, y -14.2..+26 around the rod axis),
     which the holder passes through when the actuator extends.
 
-Coordinates: rod axis = z axis, z = 0 at the bottom of the sensor body, +z up toward the actuator,
+Coordinates: rod axis = z axis, z = 0 at the v1 pocket's bottom (sensor body from z = -30 to 30), +z up toward the actuator,
 +y = back (the side away from the opening's near edge), as in the tower model.
 
 Run:  python3 make_probe_holder_v2.py [out_dir]       (needs trimesh, manifold3d, shapely)
@@ -33,10 +35,13 @@ SEG = 96
 # sensor pocket (v1, fits)
 POCKET_HALF_STRAIGHT = 15.0      # straight part of the rounded slot, each side of centre
 POCKET_R = 7.8                   # end radius -> 45.6 x 15.6
-POCKET_TOP = 30.0
+POCKET_TOP = 30.0                # ceiling over the sensor (top of the v1 pocket)
+BODY_H = 60.0                    # sensor body height; v1 only covered its top 30 mm
+BODY_BOTTOM = POCKET_TOP - BODY_H  # z of the sensor's bottom face (-30)
 WALL = 3.5
 OUT_HALF_STRAIGHT, OUT_R = POCKET_HALF_STRAIGHT, POCKET_R + WALL      # 52.6 x 22.6 outside
 SKIRT = 6.0                      # sleeve continues below the sensor body; cross bolts sit here
+SLEEVE_BOTTOM = BODY_BOTTOM - SKIRT
 CEIL_TOP = 34.0                  # ceiling plate over the sensor, with the cable hole
 CABLE_HOLE_D = 12.0
 WINDOW_TOP = 59.0                # open window for the cable, between two side pillars
@@ -63,7 +68,7 @@ HEAD_CBORE_D = 8.0               # socket or pan head
 
 # cross bolts under the sensor ends
 CROSS_X = 19.0                   # under the rounded ends, clear of the four pins (within +/-13)
-CROSS_Z = -(M4_CLEAR / 2)        # hole top flush with the sensor's bottom face
+CROSS_Z = BODY_BOTTOM - M4_CLEAR / 2   # hole top flush with the sensor's bottom face
 CROSS_BOSS_BACK = 16.0
 CROSS_CBORE_DEPTH = 3.0          # head sits at y = 13 -> M4 x 25 tip ends at y = -12
 FRONT_PAD_Y = -12.7              # front wall thickened at the bottom for the tapped holes
@@ -120,7 +125,7 @@ outer = obround(OUT_HALF_STRAIGHT, OUT_R)
 pocket = obround(POCKET_HALF_STRAIGHT, POCKET_R)
 
 # ---------------- solid body ----------------
-sleeve = extrude(outer, -SKIRT, CEIL_TOP)
+sleeve = extrude(outer, SLEEVE_BOTTOM, CEIL_TOP)
 pillars = extrude(outer.difference(sbox(-PILLAR_INNER_X, -50, PILLAR_INNER_X, 50)), CEIL_TOP, WINDOW_TOP)
 top_plate = extrude(outer, WINDOW_TOP, TOP_PLATE_TOP)
 boss = zcyl(BOSS_R, TOP_PLATE_TOP - 0.01, TOP_PLATE_TOP + SOCKET_DEPTH)
@@ -144,15 +149,15 @@ if prof.volume < 0:
     prof.invert()
 pin_block = prof
 # cross-bolt bosses (back) and thickened front at the bottom
-cross_bosses = [blk(s * CROSS_X - 6, s * CROSS_X + 6, 0, CROSS_BOSS_BACK, -SKIRT, 6) for s in (-1, 1)]
-front_pads = [blk(s * CROSS_X - 6, s * CROSS_X + 6, FRONT_PAD_Y, 0, -SKIRT, 6) for s in (-1, 1)]
+cross_bosses = [blk(s * CROSS_X - 6, s * CROSS_X + 6, 0, CROSS_BOSS_BACK, SLEEVE_BOTTOM, CROSS_Z + 8) for s in (-1, 1)]
+front_pads = [blk(s * CROSS_X - 6, s * CROSS_X + 6, FRONT_PAD_Y, 0, SLEEVE_BOTTOM, CROSS_Z + 8) for s in (-1, 1)]
 pinch_bosses = [blk(s * PINCH_X - 5.5, s * PINCH_X + 5.5, 0, PINCH_BOSS_BACK, *PINCH_BOSS) for s in (-1, 1)]
 
 body = U(sleeve, pillars, top_plate, boss, flare, pin_block, *cross_bosses, *front_pads, *pinch_bosses)
 
 # ---------------- cuts ----------------
 cuts = [
-    extrude(pocket, -SKIRT - 1, POCKET_TOP),                                   # sensor pocket, open below
+    extrude(pocket, SLEEVE_BOTTOM - 1, POCKET_TOP),                                   # sensor pocket, open below
     zcyl(CABLE_HOLE_D / 2, POCKET_TOP - 1, CEIL_TOP + 1),                       # cable up through the ceiling
     zcyl(BORE_D / 2, TOP_PLATE_TOP, TOP_PLATE_TOP + SOCKET_DEPTH + 1),          # rod socket
     # rod bolt: from the back face into the bore, M4 nut dropped in from the top
@@ -177,7 +182,7 @@ holder = D(body, *cuts)
 assert holder.is_watertight
 
 # put it on the build plate: print upright, skirt down
-holder.apply_translation([0, 0, SKIRT])
+holder.apply_translation([0, 0, -SLEEVE_BOTTOM])
 os.makedirs(OUT, exist_ok=True)
 path = os.path.join(OUT, "DIRTT_probe_holder_v2.stl")
 holder.export(path)

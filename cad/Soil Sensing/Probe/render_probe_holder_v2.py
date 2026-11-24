@@ -6,7 +6,7 @@ from trimesh.creation import cylinder, box
 from shapely.geometry import Point
 from PIL import Image, ImageDraw, ImageFont
 H = trimesh.load(sys.argv[1]); OUT = sys.argv[2]; R = sys.argv[3]  # the three.js renderer render3d.js (same one the enclosure preview uses)
-S = 6.0  # skirt offset (holder was moved up by 6)
+S = 36.0  # the holder was moved up by 36 (z = 0 there = top of the v1 pocket - 30)
 def m(t, color, opacity=1.0, edges=True):
     d = {"v": t.vertices.ravel().tolist(), "f": t.faces.ravel().tolist(), "color": color, "opacity": opacity}
     if not edges: d["edges"] = False
@@ -16,8 +16,8 @@ def ycyl(r, y0, y1, x, z):
 def zc(r, z0, z1, x=0, y=0, sec=64):
     c = cylinder(radius=r, height=z1-z0, sections=sec); c.apply_translation([x,y,(z0+z1)/2]); return c
 ob = Point(-15,0).buffer(7.6,48).union(Point(15,0).buffer(7.6,48)).convex_hull
-sensor = trimesh.creation.extrude_polygon(ob, 29.8); sensor.apply_translation([0,0,S])
-pins = [zc(1.6, S-60, S, x=x, sec=16) for x in (-11.25,-3.75,3.75,11.25)]
+sensor = trimesh.creation.extrude_polygon(ob, 59.8); sensor.apply_translation([0,0,S-30])
+pins = [zc(1.6, S-30-60, S-30, x=x, sec=16) for x in (-11.25,-3.75,3.75,11.25)]
 cable = zc(3.0, S+29.8, S+45)
 rod = zc(10.0, S+65, S+65+60)
 cap = trimesh.creation.box(extents=[36,44,14]); cap.apply_translation([0,0,S+65+24+7])
@@ -26,7 +26,7 @@ def bolt(y_head, y_tip, x, z):  # head at y_head, shank to y_tip
     return [ycyl(2.0, min(y_head,y_tip), max(y_head,y_tip), x, z), ycyl(3.5, y_head, y_head+sgn*4, x, z) if sgn>0 else ycyl(3.5, y_head-4, y_head, x, z)]
 hw = []
 hw += bolt(20.5, 4.5, 0, S+79.5)                         # rod bolt M4x16
-for x in (-19, 19): hw += bolt(13.0, -12.0, x, S-2.2)    # cross bolts M4x25
+for x in (-19, 19): hw += bolt(13.0, -12.0, x, S-32.2)   # cross bolts M4x25
 for x in (-10, 10): hw += bolt(19.0, 7.8, x, S+15)       # pinch bolts (snug)
 nuts = [box(extents=[7,3.2,8]) for _ in range(3)]
 for n,(x,y,z) in zip(nuts,[(0,13.7,S+79.5),(-10,14.0,S+15),(10,14.0,S+15)]): n.apply_translation([x,y,z])
