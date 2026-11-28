@@ -43,6 +43,12 @@ screen.
 - **Swapping plugs:** switch the 12 V off first. Switch back on with `rover.py` running: it sends
   "stop" pulses the whole time, so the MDDRC10 captures the right neutral at power-up.
 - Soil sensor: the USB–RS485 adapter, same as before.
+- **Tilt sensor: MPU-6050 (GY-521 board).**
+  - **Wiring:** VCC to Pi 3.3 V, GND to GND, SDA and SCL to the SDA/SCL holes on the Bonnet. It
+    shares I2C with the OLED: the OLED is at 0x3C and the MPU-6050 at 0x68. `i2cdetect -y 1` should
+    show both.
+  - **Mounting:** screw it **flat and tight to the chassis**, not the tower. Foam tape or a loose
+    mount turns actuator vibration into fake tilt.
 
 ## Install
 
@@ -50,9 +56,9 @@ On **both** Pis (inside the venv the team already uses):
 ```
 pip install adafruit-circuitpython-rfm9x adafruit-circuitpython-ssd1306
 ```
-Rover Pi, also:
+Rover Pi, also (and turn on I2C: `sudo raspi-config` → Interface Options → I2C):
 ```
-pip install minimalmodbus pigpio
+pip install minimalmodbus pigpio smbus2
 sudo apt install pigpio && sudo systemctl enable --now pigpiod
 ```
 Base Pi, also:
@@ -72,6 +78,8 @@ folder on both, as before.
 | `READ_S` (20 s) | How long it reads in the ground. The team's survey used 60 s; pH drifts at first. |
 | `SENSOR_PORT` | Your adapter's `/dev/serial/by-id/...` name (from the team's code). |
 | `MAX_DRIVE_PCT` (60) | Speed cap while driving. |
+| `TILT_LIMIT_DEG` (0.75°) | Tilt that stops the probe. Run `python3 rover.py --tilt-test` (stop the service first). It prints the live angle: watch it while you lift the front a few mm by hand and while the probe goes into soft ground, then set the limit between the two. |
+| `TILT_REQUIRED` (True) | With True, the rover refuses to probe if the MPU-6050 isn't answering. Set False only to test without it. |
 
 ## Run
 
@@ -141,6 +149,7 @@ python3 base.py  --sim --data-dir /tmp/b
 - `--sim` replaces the radios with UDP and behaves like the Adafruit library.
 - `--sim-loss 0.2` drops 20 % of packets.
 - `--fast` shortens the probe timings.
+- A probe at grid x = 9 plays "hit a rock": the simulated tilt sensor tips 2° partway down.
 - The simulated soil sensor makes up a field from the grid position.
 
 Tested this way with no loss and with 20 % loss:
@@ -149,6 +158,7 @@ Tested this way with no loss and with 20 % loss:
 - Driving starts, then stops on key release.
 - Wrong-mode commands refused.
 - STOP mid-probe works.
+- A blocked probe is raised again and nothing is saved.
 - Link loss stops the motors.
 
 **Not yet run on the real radios, sensor or MDDRC10.**
@@ -157,6 +167,13 @@ Tested this way with no loss and with 20 % loss:
 
 - **The grid position is what the operator types.** There's no GPS yet.
 - **After a STOP mid-probe, the probe stays where it stopped.** Press `R` to bring it up.
-- **No actuator stall detection yet** (the INA219 isn't in this code). The actuator's limit
-  switches and STOP are the protection.
+- **The tilt guard stands in for stall detection.**
+  - The actuator is far stronger than the job, so its current barely rises and it never stalls.
+    If the probe hits something hard, the rover's front lifts first.
+  - Before each probe, the rover takes 1 s of "level" readings. If the tilt goes past
+    `TILT_LIMIT_DEG` for 0.2 s while the probe goes down, it stops, raises the probe, saves
+    nothing, and the base shows "probe stopped: rover started to tip".
+  - **The force limit is therefore about the rover's weight on the probe side.** Ballast raises
+    it.
+  - A load cell would measure the actual force; that's the next step.
 - **No battery reading yet.** The base shows "n/a".

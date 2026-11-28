@@ -56,10 +56,13 @@ PHASE_NAMES = {0: "", 1: "probe going down", 2: "reading soil", 3: "probe coming
 # events the rover reports back in STATUS (the last thing that happened)
 EV_NONE, EV_PROBE_STARTED, EV_PROBE_SAVED, EV_PROBE_FAILED = 0, 1, 2, 3
 EV_WRONG_MODE, EV_BUSY, EV_STOPPED, EV_MODE_CHANGED, EV_LINK_LOST, EV_JOG = 4, 5, 6, 7, 8, 9
+EV_PROBE_BLOCKED, EV_NO_TILT = 10, 11
 EVENT_NAMES = {
     0: "", 1: "probe started", 2: "probe saved", 3: "probe failed: no good sensor readings",
     4: "refused: wrong mode", 5: "refused: busy", 6: "stopped", 7: "mode changed",
     8: "link was lost", 9: "actuator moved",
+    10: "probe stopped: rover started to tip (hit something hard); probe raised",
+    11: "refused: tilt sensor not working",
 }
 
 # type, seq, battery % (255 = unknown), state, rssi | mode, phase, event, event probe id, lines waiting

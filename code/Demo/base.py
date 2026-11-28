@@ -171,7 +171,8 @@ class Base:
             if ev != self.last_event and st["event"] != L.EV_NONE:
                 name = L.EVENT_NAMES.get(st["event"], str(st["event"]))
                 self.say(f"rover: {name}" + (f" (probe {st['event_id']})" if st["event"] in
-                         (L.EV_PROBE_STARTED, L.EV_PROBE_SAVED, L.EV_PROBE_FAILED) else ""))
+                         (L.EV_PROBE_STARTED, L.EV_PROBE_SAVED, L.EV_PROBE_FAILED,
+                          L.EV_PROBE_BLOCKED) else ""))
             self.last_event = ev
             L.show(self.display, FONT, f"LINK OK {L.MODE_NAMES.get(st['mode'], '?')}",
                    L.PHASE_NAMES.get(st["phase"], "") or L.STATE_NAMES.get(st["state"], ""),
