@@ -1,0 +1,404 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 1800" width="2400" height="1800" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+<rect width="2400" height="1800" fill="#ffffff"/>
+<text x="50" y="56" font-size="30" font-weight="bold" text-anchor="start" fill="#1f2328">D.I.R.T.T. rover wiring: December demo</text>
+<text x="50" y="88" font-size="17" font-weight="normal" text-anchor="start" fill="#555">Rover Pi 3 B drives the Cytron MDDRC10 directly (no flight controller yet). Dashed parts are planned and not needed for the demo.</text>
+<rect x="50" y="160" width="230" height="190" rx="8" fill="#ffffff" stroke="#1f2328" stroke-width="2"/>
+<text x="165" y="198" font-size="22" font-weight="bold" text-anchor="middle" fill="#1f2328">Battery</text>
+<text x="165" y="224" font-size="15" font-weight="normal" text-anchor="middle" fill="#555">LiFePO4 12.8 V 20 Ah</text>
+<text x="165" y="246" font-size="14" font-weight="normal" text-anchor="middle" fill="#777">(built-in BMS)</text>
+<circle cx="280" cy="290" r="7" fill="#ffffff" stroke="#d62828" stroke-width="2.5"/>
+<text x="267" y="295" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">+</text>
+<circle cx="280" cy="330" r="7" fill="#ffffff" stroke="#222222" stroke-width="2.5"/>
+<text x="267" y="335" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">−</text>
+<rect x="330" y="250" width="56" height="110" rx="8" fill="#f3f3f3" stroke="#1f2328" stroke-width="2"/>
+<text x="358" y="238" font-size="15" font-weight="bold" text-anchor="middle" fill="#1f2328">XT60</text>
+<text x="358" y="385" font-size="13" font-weight="normal" text-anchor="middle" fill="#666">unplug</text>
+<text x="358" y="401" font-size="13" font-weight="normal" text-anchor="middle" fill="#666">to charge</text>
+<path d="M287,290 L440,290" fill="none" stroke="#d62828" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="440" y="266" width="120" height="48" rx="8" fill="#fff6d6" stroke="#1f2328" stroke-width="2"/>
+<text x="500" y="297" font-size="16" font-weight="bold" text-anchor="middle" fill="#1f2328">20 A fuse</text>
+<text x="500" y="336" font-size="13" font-weight="normal" text-anchor="middle" fill="#666" font-style="italic">≤ 6 in from battery</text>
+<path d="M560,290 L630,290" fill="none" stroke="#d62828" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="680" cy="290" r="48" fill="#ffffff" stroke="#1f2328" stroke-width="2.5"/>
+<path d="M652,312 L708,268" fill="none" stroke="#222222" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="680" y="228" font-size="16" font-weight="bold" text-anchor="middle" fill="#1f2328">Main switch</text>
+<text x="680" y="362" font-size="13" font-weight="normal" text-anchor="middle" fill="#666">rotary disconnect</text>
+<path d="M728,290 L830,290" fill="none" stroke="#d62828" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="780" y="280" font-size="13" font-weight="bold" text-anchor="middle" fill="#d62828">14 AWG</text>
+<text x="416" y="280" font-size="13" font-weight="bold" text-anchor="middle" fill="#d62828">14 AWG</text>
+<rect x="830" y="150" width="330" height="640" rx="8" fill="#fafafa" stroke="#1f2328" stroke-width="2"/>
+<text x="995.0" y="136" font-size="17" font-weight="bold" text-anchor="middle" fill="#1f2328">6-way fuse block (with − bus)</text>
+<rect x="848" y="200" width="26" height="480" rx="3" fill="#f6d2d2" stroke="#d62828" stroke-width="1.5"/>
+<text x="861" y="190" font-size="13" font-weight="normal" text-anchor="middle" fill="#d62828">+ bus</text>
+<path d="M874,230 L910,230" fill="none" stroke="#d62828" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="910" y="208" width="120" height="44" rx="4" fill="#ffffff" stroke="#1f2328" stroke-width="2"/>
+<text x="970" y="236" font-size="15" font-weight="bold" text-anchor="middle" fill="#1f2328">F1 15 A</text>
+<text x="1040" y="256" font-size="12" font-weight="normal" text-anchor="start" fill="#555">motors, via relay</text>
+<path d="M1030,230 L1160,230" fill="none" stroke="#1f2328" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M874,308 L910,308" fill="none" stroke="#d62828" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="910" y="286" width="120" height="44" rx="4" fill="#ffffff" stroke="#1f2328" stroke-width="2"/>
+<text x="970" y="314" font-size="15" font-weight="bold" text-anchor="middle" fill="#1f2328">F2 2 A</text>
+<text x="1040" y="334" font-size="12" font-weight="normal" text-anchor="start" fill="#555">E-stop loop</text>
+<path d="M1030,308 L1160,308" fill="none" stroke="#1f2328" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M874,386 L910,386" fill="none" stroke="#d62828" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="910" y="364" width="120" height="44" rx="4" fill="#ffffff" stroke="#1f2328" stroke-width="2"/>
+<text x="970" y="392" font-size="15" font-weight="bold" text-anchor="middle" fill="#1f2328">F3 5 A</text>
+<text x="1040" y="412" font-size="12" font-weight="normal" text-anchor="start" fill="#555">5 V → Pi</text>
+<path d="M1030,386 L1160,386" fill="none" stroke="#1f2328" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M874,464 L910,464" fill="none" stroke="#d62828" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="910" y="442" width="120" height="44" rx="4" fill="#ffffff" stroke="#1f2328" stroke-width="2"/>
+<text x="970" y="470" font-size="15" font-weight="bold" text-anchor="middle" fill="#1f2328">F4 2 A</text>
+<text x="1040" y="490" font-size="12" font-weight="normal" text-anchor="start" fill="#555">soil sensor</text>
+<path d="M1030,464 L1160,464" fill="none" stroke="#1f2328" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M874,542 L910,542" fill="none" stroke="#9aa0a6" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="910" y="520" width="120" height="44" rx="4" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"/>
+<text x="970" y="548" font-size="15" font-weight="bold" text-anchor="middle" fill="#9aa0a6">F5 —</text>
+<text x="1040" y="568" font-size="12" font-weight="normal" text-anchor="start" fill="#9aa0a6">spare</text>
+<path d="M1030,542 L1160,542" fill="none" stroke="#9aa0a6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M874,620 L910,620" fill="none" stroke="#9aa0a6" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="910" y="598" width="120" height="44" rx="4" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"/>
+<text x="970" y="626" font-size="15" font-weight="bold" text-anchor="middle" fill="#9aa0a6">F6 —</text>
+<text x="1040" y="646" font-size="12" font-weight="normal" text-anchor="start" fill="#9aa0a6">spare</text>
+<path d="M1030,620 L1160,620" fill="none" stroke="#9aa0a6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="848" y="728" width="294" height="40" rx="8" fill="#dddddd" stroke="#1f2328" stroke-width="2"/>
+<text x="995.0" y="754" font-size="15" font-weight="bold" text-anchor="middle" fill="#1f2328">− bus (ground)</text>
+<path d="M287,330 L300,330 L300,470 L760,470 L760,748 L848,748" fill="none" stroke="#222222" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="600" y="460" font-size="13" font-weight="bold" text-anchor="middle" fill="#222222">14 AWG</text>
+<rect x="1260" y="150" width="230" height="170" rx="8" fill="#ffffff" stroke="#1f2328" stroke-width="2"/>
+<text x="1375" y="184" font-size="19" font-weight="bold" text-anchor="middle" fill="#1f2328">Relay</text>
+<text x="1375" y="208" font-size="14" font-weight="normal" text-anchor="middle" fill="#555">12 V 40 A SPST</text>
+<circle cx="1260" cy="230" r="7" fill="#ffffff" stroke="#1f2328" stroke-width="2.5"/>
+<text x="1273" y="235" font-size="14" font-weight="bold" text-anchor="start" fill="#1f2328">30</text>
+<circle cx="1490" cy="230" r="7" fill="#ffffff" stroke="#1f2328" stroke-width="2.5"/>
+<text x="1477" y="235" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">87</text>
+<circle cx="1320" cy="320" r="7" fill="#ffffff" stroke="#1f2328" stroke-width="2.5"/>
+<text x="1320" y="307" font-size="14" font-weight="bold" text-anchor="middle" fill="#1f2328">86</text>
+<circle cx="1430" cy="320" r="7" fill="#ffffff" stroke="#1f2328" stroke-width="2.5"/>
+<text x="1430" y="307" font-size="14" font-weight="bold" text-anchor="middle" fill="#1f2328">85</text>
+<text x="1375" y="290" font-size="13" font-weight="normal" text-anchor="middle" fill="#777" font-style="italic">coil</text>
+<path d="M1160,230 L1253,230" fill="none" stroke="#d62828" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1210.0" y="220" font-size="13" font-weight="bold" text-anchor="middle" fill="#d62828">14 AWG</text>
+<rect x="1250" y="400" width="250" height="120" rx="8" fill="#fdecec" stroke="#d62828" stroke-width="2.5"/>
+<text x="1375" y="432" font-size="20" font-weight="bold" text-anchor="middle" fill="#d62828">E-STOP</text>
+<text x="1375" y="455" font-size="13" font-weight="normal" text-anchor="middle" fill="#555">NC contact (pressed = open)</text>
+<path d="M1160,308 L1210,308 L1210,485 L1280,485" fill="none" stroke="#8e44ad" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1280,485 L1320,485" fill="none" stroke="#8e44ad" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1325,492 L1415,474" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1425,485 L1460,485 L1460,370 L1320,370 L1320,327" fill="none" stroke="#8e44ad" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1210" y="298" font-size="13" font-weight="bold" text-anchor="middle" fill="#8e44ad">18 AWG</text>
+<path d="M1430,327 L1430,345 L1500,345 L1500,355" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1500,355 L1500,369" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1489.0,369 L1511.0,369" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1493.0,375 L1507.0,375" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1497.0,381 L1503.0,381" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1516" y="381" font-size="12" font-weight="normal" text-anchor="start" fill="#444">− bus</text>
+<text x="1375" y="545" font-size="13" font-weight="normal" text-anchor="middle" fill="#9aa0a6">NO contact → Pi GPIO27 + GND (later)</text>
+<rect x="1640" y="150" width="330" height="560" rx="14" fill="#1d2125" stroke="#000" stroke-width="2"/>
+<text x="1805.0" y="190" font-size="22" font-weight="bold" text-anchor="middle" fill="#ffffff">Cytron MDDRC10</text>
+<text x="1805.0" y="214" font-size="15" font-weight="bold" text-anchor="middle" fill="#f2c94c">switch on MIX</text>
+<text x="1805.0" y="236" font-size="13" font-weight="normal" text-anchor="middle" fill="#c9ced3">RC1 = throttle, RC2 = steering</text>
+<circle cx="1640" cy="290" r="8" fill="#9be59b" stroke="#2c6b2c" stroke-width="2"/>
+<text x="1656" y="295" font-size="15" font-weight="bold" text-anchor="start" fill="#ffffff">VB+</text>
+<circle cx="1640" cy="340" r="8" fill="#9be59b" stroke="#2c6b2c" stroke-width="2"/>
+<text x="1656" y="345" font-size="15" font-weight="bold" text-anchor="start" fill="#ffffff">VB−</text>
+<path d="M1497,230 L1580,230 L1580,290 L1632,290" fill="none" stroke="#d62828" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1560" y="220" font-size="13" font-weight="bold" text-anchor="middle" fill="#d62828">14 AWG</text>
+<path d="M1632,340 L1612,340 L1612,400" fill="none" stroke="#222222" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1612,400 L1612,414" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1601.0,414 L1623.0,414" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1605.0,420 L1619.0,420" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1609.0,426 L1615.0,426" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1612" y="448" font-size="12" font-weight="normal" text-anchor="middle" fill="#444">− bus</text>
+<circle cx="1970" cy="420" r="8" fill="#9be59b" stroke="#2c6b2c" stroke-width="2"/>
+<text x="1954" y="425" font-size="15" font-weight="bold" text-anchor="end" fill="#ffffff">MLA</text>
+<circle cx="1970" cy="465" r="8" fill="#9be59b" stroke="#2c6b2c" stroke-width="2"/>
+<text x="1954" y="470" font-size="15" font-weight="bold" text-anchor="end" fill="#ffffff">MLB</text>
+<circle cx="1970" cy="560" r="8" fill="#9be59b" stroke="#2c6b2c" stroke-width="2"/>
+<text x="1954" y="565" font-size="15" font-weight="bold" text-anchor="end" fill="#ffffff">MRA</text>
+<circle cx="1970" cy="605" r="8" fill="#9be59b" stroke="#2c6b2c" stroke-width="2"/>
+<text x="1954" y="610" font-size="15" font-weight="bold" text-anchor="end" fill="#ffffff">MRB</text>
+<text x="1954" y="395" font-size="13" font-weight="bold" text-anchor="end" fill="#c9ced3">LEFT</text>
+<text x="1954" y="535" font-size="13" font-weight="bold" text-anchor="end" fill="#c9ced3">RIGHT</text>
+<rect x="1703" y="703" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1710" y="692" font-size="14" font-weight="bold" text-anchor="middle" fill="#ffffff">RC1</text>
+<rect x="1793" y="703" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1800" y="692" font-size="14" font-weight="bold" text-anchor="middle" fill="#ffffff">RC2</text>
+<rect x="1883" y="703" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1890" y="692" font-size="14" font-weight="bold" text-anchor="middle" fill="#ffffff">GND</text>
+<text x="1805.0" y="650" font-size="13" font-weight="normal" text-anchor="middle" fill="#aaa" font-style="italic">RC +5V pin: not connected</text>
+<rect x="2190" y="150" width="150" height="76" rx="8" fill="#eef4fb" stroke="#1f2328" stroke-width="2"/>
+<circle cx="2308" cy="188" r="24" fill="#ffffff" stroke="#1f2328" stroke-width="2.5"/>
+<text x="2308" y="196" font-size="20" font-weight="bold" text-anchor="middle" fill="#1f2328">M</text>
+<text x="2240" y="182" font-size="13" font-weight="bold" text-anchor="middle" fill="#1f2328">FIT0185</text>
+<text x="2240" y="202" font-size="13" font-weight="normal" text-anchor="middle" fill="#555">left front</text>
+<rect x="2190" y="290" width="150" height="76" rx="8" fill="#eef4fb" stroke="#1f2328" stroke-width="2"/>
+<circle cx="2308" cy="328" r="24" fill="#ffffff" stroke="#1f2328" stroke-width="2.5"/>
+<text x="2308" y="336" font-size="20" font-weight="bold" text-anchor="middle" fill="#1f2328">M</text>
+<text x="2240" y="322" font-size="13" font-weight="bold" text-anchor="middle" fill="#1f2328">FIT0185</text>
+<text x="2240" y="342" font-size="13" font-weight="normal" text-anchor="middle" fill="#555">left rear</text>
+<rect x="2190" y="500" width="150" height="76" rx="8" fill="#eef4fb" stroke="#1f2328" stroke-width="2"/>
+<circle cx="2308" cy="538" r="24" fill="#ffffff" stroke="#1f2328" stroke-width="2.5"/>
+<text x="2308" y="546" font-size="20" font-weight="bold" text-anchor="middle" fill="#1f2328">M</text>
+<text x="2240" y="532" font-size="13" font-weight="bold" text-anchor="middle" fill="#1f2328">FIT0185</text>
+<text x="2240" y="552" font-size="13" font-weight="normal" text-anchor="middle" fill="#555">right front</text>
+<rect x="2190" y="640" width="150" height="76" rx="8" fill="#eef4fb" stroke="#1f2328" stroke-width="2"/>
+<circle cx="2308" cy="678" r="24" fill="#ffffff" stroke="#1f2328" stroke-width="2.5"/>
+<text x="2308" y="686" font-size="20" font-weight="bold" text-anchor="middle" fill="#1f2328">M</text>
+<text x="2240" y="672" font-size="13" font-weight="bold" text-anchor="middle" fill="#1f2328">FIT0185</text>
+<text x="2240" y="692" font-size="13" font-weight="normal" text-anchor="middle" fill="#555">right rear</text>
+<path d="M1978,420 L2070,420" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1978,465 L2100,465" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M2070,172 L2070,420" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M2100,206 L2100,465" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="2070" cy="420" r="5" fill="#1f6fd1"/>
+<circle cx="2070" cy="172" r="5" fill="#1f6fd1"/>
+<circle cx="2070" cy="312" r="5" fill="#1f6fd1"/>
+<circle cx="2100" cy="465" r="5" fill="#1f6fd1"/>
+<circle cx="2100" cy="206" r="5" fill="#1f6fd1"/>
+<circle cx="2100" cy="346" r="5" fill="#1f6fd1"/>
+<path d="M2070,172 L2190,172" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="2182" y="166" font-size="13" font-weight="bold" text-anchor="end" fill="#1f2328">+</text>
+<path d="M2070,312 L2190,312" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="2182" y="306" font-size="13" font-weight="bold" text-anchor="end" fill="#1f2328">+</text>
+<path d="M2100,206 L2190,206" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="2182" y="222" font-size="13" font-weight="bold" text-anchor="end" fill="#1f2328">−</text>
+<path d="M2100,346 L2190,346" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="2182" y="362" font-size="13" font-weight="bold" text-anchor="end" fill="#1f2328">−</text>
+<path d="M1978,560 L2130,560" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1978,605 L2160,605" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M2130,522 L2130,662" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M2160,556 L2160,696" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="2130" cy="560" r="5" fill="#1f6fd1"/>
+<circle cx="2130" cy="522" r="5" fill="#1f6fd1"/>
+<circle cx="2130" cy="662" r="5" fill="#1f6fd1"/>
+<circle cx="2160" cy="605" r="5" fill="#1f6fd1"/>
+<circle cx="2160" cy="556" r="5" fill="#1f6fd1"/>
+<circle cx="2160" cy="696" r="5" fill="#1f6fd1"/>
+<path d="M2130,522 L2190,522" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="2182" y="516" font-size="13" font-weight="bold" text-anchor="end" fill="#1f2328">+</text>
+<path d="M2130,662 L2190,662" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="2182" y="656" font-size="13" font-weight="bold" text-anchor="end" fill="#1f2328">+</text>
+<path d="M2160,556 L2190,556" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="2182" y="572" font-size="13" font-weight="bold" text-anchor="end" fill="#1f2328">−</text>
+<path d="M2160,696 L2190,696" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="2182" y="712" font-size="13" font-weight="bold" text-anchor="end" fill="#1f2328">−</text>
+<text x="2240" y="745" font-size="13" font-weight="bold" text-anchor="middle" fill="#1f6fd1">18 AWG</text>
+<rect x="1250" y="600" width="250" height="120" rx="8" fill="#eef7ee" stroke="#1f2328" stroke-width="2"/>
+<text x="1375" y="632" font-size="17" font-weight="bold" text-anchor="middle" fill="#1f2328">5 V buck converter</text>
+<text x="1375" y="656" font-size="13" font-weight="bold" text-anchor="middle" fill="#d62828">set to 5.1 V BEFORE</text>
+<text x="1375" y="674" font-size="13" font-weight="bold" text-anchor="middle" fill="#d62828">connecting the Pi</text>
+<text x="1375" y="698" font-size="13" font-weight="normal" text-anchor="middle" fill="#555">≥ 3 A</text>
+<circle cx="1250" cy="630" r="7" fill="#ffffff" stroke="#d62828" stroke-width="2.5"/>
+<text x="1263" y="635" font-size="12" font-weight="bold" text-anchor="start" fill="#1f2328">IN+</text>
+<circle cx="1250" cy="690" r="7" fill="#ffffff" stroke="#222222" stroke-width="2.5"/>
+<text x="1263" y="695" font-size="12" font-weight="bold" text-anchor="start" fill="#1f2328">IN−</text>
+<circle cx="1500" cy="630" r="7" fill="#ffffff" stroke="#d62828" stroke-width="2.5"/>
+<text x="1487" y="635" font-size="12" font-weight="bold" text-anchor="end" fill="#1f2328">OUT+</text>
+<circle cx="1500" cy="690" r="7" fill="#ffffff" stroke="#222222" stroke-width="2.5"/>
+<text x="1487" y="695" font-size="12" font-weight="bold" text-anchor="end" fill="#1f2328">OUT−</text>
+<path d="M1160,386 L1200,386 L1200,630 L1243,630" fill="none" stroke="#d62828" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1190" y="645" font-size="13" font-weight="bold" text-anchor="middle" fill="#d62828">18 AWG</text>
+<path d="M1243,690 L1215,690 L1215,712" fill="none" stroke="#222222" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1215,712 L1215,726" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1204.0,726 L1226.0,726" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1208.0,732 L1222.0,732" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1212.0,738 L1218.0,738" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1231" y="738" font-size="12" font-weight="normal" text-anchor="start" fill="#444">− bus</text>
+<rect x="1080" y="960" width="420" height="490" rx="14" fill="#e8f1e4" stroke="#2e7d32" stroke-width="2.5"/>
+<text x="1110" y="1004" font-size="22" font-weight="bold" text-anchor="start" fill="#1f2328">Rover Pi 3 B</text>
+<text x="1110" y="1030" font-size="14" font-weight="normal" text-anchor="start" fill="#555">+ Adafruit RFM95W LoRa Bonnet (915 MHz)</text>
+<text x="1110" y="1052" font-size="13" font-weight="normal" text-anchor="start" fill="#777">Bonnet uses SPI, CE1, GPIO22, GPIO25,</text>
+<text x="1110" y="1070" font-size="13" font-weight="normal" text-anchor="start" fill="#777">OLED on I2C 0x3C; buttons on 5, 6, 12</text>
+<text x="1110" y="1105" font-size="13" font-weight="bold" text-anchor="start" fill="#2e7d32">Use the Bonnet's breakout holes</text>
+<text x="1110" y="1123" font-size="13" font-weight="normal" text-anchor="start" fill="#555">(the Pi header is covered).</text>
+<path d="M1140,960 L1140,910" fill="none" stroke="#444" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1125,910 L1155,910" fill="none" stroke="#444" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1165" y="920" font-size="13" font-weight="normal" text-anchor="start" fill="#555">antenna</text>
+<rect x="1493" y="993" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1484" y="1005" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">5V</text>
+<rect x="1493" y="1023" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1484" y="1035" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">GND</text>
+<rect x="1493" y="1053" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1484" y="1065" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">GPIO18</text>
+<rect x="1493" y="1083" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1484" y="1095" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">GPIO19</text>
+<rect x="1493" y="1113" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1484" y="1125" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">GND</text>
+<rect x="1493" y="1143" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1484" y="1155" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">GPIO23</text>
+<rect x="1493" y="1173" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1484" y="1185" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">GPIO24</text>
+<rect x="1493" y="1203" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1484" y="1215" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">GND</text>
+<rect x="1493" y="1233" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1484" y="1245" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">3V3</text>
+<rect x="1493" y="1263" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1484" y="1275" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">GND</text>
+<rect x="1493" y="1293" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1484" y="1305" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">SDA</text>
+<rect x="1493" y="1323" width="14" height="14" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1484" y="1335" font-size="14" font-weight="bold" text-anchor="end" fill="#1f2328">SCL</text>
+<rect x="1493" y="1353" width="14" height="14" fill="#eeeeee" stroke="#aaa"/>
+<text x="1484" y="1365" font-size="14" font-weight="bold" text-anchor="end" fill="#9aa0a6">GPIO27</text>
+<rect x="1493" y="1383" width="14" height="14" fill="#eeeeee" stroke="#aaa"/>
+<text x="1484" y="1395" font-size="14" font-weight="bold" text-anchor="end" fill="#9aa0a6">GPIO16</text>
+<rect x="1493" y="1413" width="14" height="14" fill="#eeeeee" stroke="#aaa"/>
+<text x="1484" y="1425" font-size="14" font-weight="bold" text-anchor="end" fill="#9aa0a6">GPIO20</text>
+<path d="M1507,630 L1540,630 L1540,1000 L1507,1000" fill="none" stroke="#d62828" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1507,690 L1525,690 L1525,1030 L1507,1030" fill="none" stroke="#222222" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1515" y="830" font-size="13" font-weight="bold" text-anchor="end" fill="#d62828">20 AWG, short</text>
+<text x="1110" y="1160" font-size="13" font-weight="normal" text-anchor="start" fill="#555">5 V in through the 5V/GND holes</text>
+<text x="1110" y="1178" font-size="13" font-weight="normal" text-anchor="start" fill="#555">skips the Pi's input fuse: check</text>
+<text x="1110" y="1196" font-size="13" font-weight="normal" text-anchor="start" fill="#555">the converter reads 5.1 V first.</text>
+<text x="1110" y="1220" font-size="13" font-weight="normal" text-anchor="start" fill="#777" font-style="italic">(Or power it by USB for the demo.)</text>
+<path d="M1507,1060 L1710,1060 L1710,717" fill="none" stroke="#e08a00" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1507,1090 L1800,1090 L1800,717" fill="none" stroke="#e08a00" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1507,1120 L1890,1120 L1890,717" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1702" y="790" font-size="13" font-weight="bold" text-anchor="end" fill="#e08a00">22 AWG</text>
+<text x="1660" y="1052" font-size="13" font-weight="normal" text-anchor="start" fill="#e08a00">throttle</text>
+<text x="1660" y="1082" font-size="13" font-weight="normal" text-anchor="start" fill="#e08a00">steering</text>
+<text x="1700" y="1112" font-size="13" font-weight="bold" text-anchor="start" fill="#d62828">common ground: required</text>
+<rect x="1990" y="1148" width="250" height="200" rx="8" fill="#e6f6f4" stroke="#2a9d8f" stroke-width="2.5"/>
+<text x="2115" y="1178" font-size="16" font-weight="bold" text-anchor="middle" fill="#1f2328">MPU-6050 (GY-521)</text>
+<text x="2115" y="1200" font-size="13" font-weight="normal" text-anchor="middle" fill="#555">tilt guard, I2C 0x68</text>
+<text x="2115" y="1220" font-size="13" font-weight="normal" text-anchor="middle" fill="#555">screw flat + tight to chassis</text>
+<rect x="1984" y="1234" width="12" height="12" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="2002" y="1245" font-size="12" font-weight="bold" text-anchor="start" fill="#1f2328">VCC</text>
+<rect x="1984" y="1264" width="12" height="12" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="2002" y="1275" font-size="12" font-weight="bold" text-anchor="start" fill="#1f2328">GND</text>
+<rect x="1984" y="1294" width="12" height="12" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="2002" y="1305" font-size="12" font-weight="bold" text-anchor="start" fill="#1f2328">SDA</text>
+<rect x="1984" y="1324" width="12" height="12" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="2002" y="1335" font-size="12" font-weight="bold" text-anchor="start" fill="#1f2328">SCL</text>
+<path d="M1507,1240 L1984,1240" fill="none" stroke="#d62828" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1507,1270 L1984,1270" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1507,1300 L1984,1300" fill="none" stroke="#2a9d8f" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1507,1330 L1984,1330" fill="none" stroke="#2a9d8f" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1700" y="1232" font-size="13" font-weight="bold" text-anchor="middle" fill="#d62828">3.3 V</text>
+<rect x="1990" y="1363" width="250" height="100" rx="8" fill="#f7f7f7" stroke="#9aa0a6" stroke-width="2" stroke-dasharray="10,6"/>
+<text x="2115" y="1391" font-size="15" font-weight="bold" text-anchor="middle" fill="#777">HX711 + load cell (planned)</text>
+<text x="2115" y="1413" font-size="13" font-weight="normal" text-anchor="middle" fill="#777">DT → GPIO16, SCK → GPIO20</text>
+<text x="2115" y="1431" font-size="13" font-weight="normal" text-anchor="middle" fill="#777">VCC → 3V3, GND → GND;</text>
+<text x="2115" y="1449" font-size="13" font-weight="normal" text-anchor="middle" fill="#777">cell on E+ E− A+ A−</text>
+<path d="M1507,1390 L1610,1390 L1610,1408 L1990,1408" fill="none" stroke="#9aa0a6" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="8,6"/>
+<path d="M1507,1420 L1625,1420 L1625,1428 L1990,1428" fill="none" stroke="#9aa0a6" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="8,6"/>
+<path d="M1507,1360 L1640,1360 L1640,1360" fill="none" stroke="#9aa0a6" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="8,6"/>
+<text x="1650" y="1365" font-size="13" font-weight="normal" text-anchor="start" fill="#9aa0a6">← E-stop NO contact (later)</text>
+<rect x="1960" y="850" width="200" height="270" rx="8" fill="#fff4e0" stroke="#b05f00" stroke-width="2.5"/>
+<circle cx="2010" cy="850" r="7" fill="#ffffff" stroke="#d62828" stroke-width="2.5"/>
+<text x="2010" y="874" font-size="13" font-weight="bold" text-anchor="middle" fill="#1f2328">VM</text>
+<circle cx="2100" cy="850" r="7" fill="#ffffff" stroke="#222222" stroke-width="2.5"/>
+<text x="2100" y="874" font-size="13" font-weight="bold" text-anchor="middle" fill="#1f2328">GND</text>
+<text x="2060.0" y="912" font-size="16" font-weight="bold" text-anchor="middle" fill="#1f2328">Adafruit DRV8871</text>
+<text x="2060.0" y="932" font-size="13" font-weight="normal" text-anchor="middle" fill="#555">actuator driver</text>
+<text x="2060.0" y="950" font-size="12" font-weight="normal" text-anchor="middle" fill="#777">6.5–45 V, ≈2 A limit</text>
+<text x="2060.0" y="966" font-size="12" font-weight="normal" text-anchor="middle" fill="#777">(30k RLIM on the board)</text>
+<circle cx="2160" cy="1000" r="7" fill="#ffffff" stroke="#1f6fd1" stroke-width="2.5"/>
+<text x="2147" y="1005" font-size="13" font-weight="bold" text-anchor="end" fill="#1f2328">OUT1</text>
+<circle cx="2160" cy="1035" r="7" fill="#ffffff" stroke="#1f6fd1" stroke-width="2.5"/>
+<text x="2147" y="1040" font-size="13" font-weight="bold" text-anchor="end" fill="#1f2328">OUT2</text>
+<rect x="1954" y="1049" width="12" height="12" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1972" y="1060" font-size="12" font-weight="bold" text-anchor="start" fill="#1f2328">IN1</text>
+<rect x="1954" y="1074" width="12" height="12" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1972" y="1085" font-size="12" font-weight="bold" text-anchor="start" fill="#1f2328">IN2</text>
+<rect x="1954" y="1099" width="12" height="12" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="1972" y="1110" font-size="12" font-weight="bold" text-anchor="start" fill="#1f2328">GND</text>
+<path d="M1507,1150 L1915,1150 L1915,1055 L1954,1055" fill="none" stroke="#e08a00" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1507,1180 L1930,1180 L1930,1080 L1954,1080" fill="none" stroke="#e08a00" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1507,1210 L1945,1210 L1945,1105 L1954,1105" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1660" y="1142" font-size="13" font-weight="normal" text-anchor="start" fill="#e08a00">actuator IN1</text>
+<text x="1660" y="1172" font-size="13" font-weight="normal" text-anchor="start" fill="#e08a00">actuator IN2</text>
+<text x="1660" y="1202" font-size="13" font-weight="normal" text-anchor="start" fill="#444">common ground</text>
+<circle cx="1580" cy="290" r="7" fill="#d62828"/>
+<path d="M1580,290 L1580,812 L2010,812 L2010,843" fill="none" stroke="#d62828" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="1905" y="799" width="62" height="26" rx="4" fill="#fff7d6" stroke="#1f2328" stroke-width="2"/>
+<text x="1936" y="817" font-size="13" font-weight="bold" text-anchor="middle" fill="#1f2328">5 A</text>
+<text x="1936" y="790" font-size="13" font-weight="bold" text-anchor="middle" fill="#1f2328">inline fuse</text>
+<text x="1590" y="745" font-size="13" font-weight="bold" text-anchor="start" fill="#d62828">18 AWG</text>
+<path d="M2100,843 L2100,790 L2140,790 L2140,800" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M2140,800 L2140,814" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M2129.0,814 L2151.0,814" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M2133.0,820 L2147.0,820" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M2137.0,826 L2143.0,826" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="2156" y="826" font-size="12" font-weight="normal" text-anchor="start" fill="#444">− bus</text>
+<rect x="2200" y="960" width="155" height="150" rx="8" fill="#fff8e6" stroke="#b07a00" stroke-width="2.5"/>
+<text x="2278" y="988" font-size="15" font-weight="bold" text-anchor="middle" fill="#1f2328">Linear actuator</text>
+<text x="2278" y="1008" font-size="13" font-weight="normal" text-anchor="middle" fill="#555">ECO-WORTHY</text>
+<text x="2278" y="1026" font-size="13" font-weight="normal" text-anchor="middle" fill="#555">8 in stroke, 12 V</text>
+<text x="2278" y="1056" font-size="12" font-weight="normal" text-anchor="middle" fill="#777" font-style="italic">Its own limit</text>
+<text x="2278" y="1072" font-size="12" font-weight="normal" text-anchor="middle" fill="#777" font-style="italic">switches stop it</text>
+<text x="2278" y="1088" font-size="12" font-weight="normal" text-anchor="middle" fill="#777" font-style="italic">at each end.</text>
+<path d="M2167,1000 L2200,1000" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M2167,1035 L2200,1035" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="560" y="1040" width="280" height="140" rx="8" fill="#f2f2f8" stroke="#3d3d7a" stroke-width="2"/>
+<text x="700" y="1070" font-size="16" font-weight="bold" text-anchor="middle" fill="#1f2328">USB–RS485 adapter</text>
+<text x="700" y="1092" font-size="13" font-weight="normal" text-anchor="middle" fill="#555">FTDI FT232R</text>
+<rect x="554" y="1116" width="12" height="12" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="572" y="1127" font-size="12" font-weight="bold" text-anchor="start" fill="#1f2328">A</text>
+<rect x="554" y="1138" width="12" height="12" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="572" y="1149" font-size="12" font-weight="bold" text-anchor="start" fill="#1f2328">B</text>
+<rect x="554" y="1160" width="12" height="12" fill="#f2c94c" stroke="#7a5d00"/>
+<text x="572" y="1171" font-size="12" font-weight="bold" text-anchor="start" fill="#1f2328">GND</text>
+<path d="M840,1110 L1080,1110" fill="none" stroke="#555555" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="960.0" y="1100" font-size="13" font-weight="bold" text-anchor="middle" fill="#555555">USB</text>
+<rect x="80" y="1000" width="300" height="230" rx="8" fill="#f4ede2" stroke="#7a5a2e" stroke-width="2.5"/>
+<text x="230" y="1030" font-size="17" font-weight="bold" text-anchor="middle" fill="#1f2328">Soil sensor SEN0604</text>
+<text x="230" y="1052" font-size="13" font-weight="normal" text-anchor="middle" fill="#555">RS485 4-in-1, DC 5–30 V</text>
+<text x="230" y="1070" font-size="12" font-weight="normal" text-anchor="middle" fill="#777" font-style="italic">in probe holder v2, on the actuator</text>
+<circle cx="380" cy="1110" r="6" fill="#8b5a2b"/>
+<text x="368" y="1115" font-size="13" font-weight="bold" text-anchor="end" fill="#1f2328">brown VCC</text>
+<circle cx="380" cy="1140" r="6" fill="#222222"/>
+<text x="368" y="1145" font-size="13" font-weight="bold" text-anchor="end" fill="#1f2328">black GND</text>
+<circle cx="380" cy="1170" r="6" fill="#d4b000"/>
+<text x="368" y="1175" font-size="13" font-weight="bold" text-anchor="end" fill="#1f2328">yellow 485-A</text>
+<circle cx="380" cy="1200" r="6" fill="#1f6fd1"/>
+<text x="368" y="1205" font-size="13" font-weight="bold" text-anchor="end" fill="#1f2328">blue 485-B</text>
+<path d="M386,1170 L470,1170 L470,1122 L554,1122" fill="none" stroke="#d4b000" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M386,1200 L490,1200 L490,1144 L554,1144" fill="none" stroke="#1f6fd1" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M386,1140 L450,1140 L450,1166 L554,1166" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1160,464 L1180,464 L1180,900 L420,900 L420,1110 L386,1110" fill="none" stroke="#8b5a2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="700" y="890" font-size="13" font-weight="bold" text-anchor="middle" fill="#8b5a2b">F4 → sensor VCC (12 V), 20 AWG</text>
+<path d="M450,1140 L450,960" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M450,960 L450,974" fill="none" stroke="#222222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M439.0,974 L461.0,974" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M443.0,980 L457.0,980" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M447.0,986 L453.0,986" fill="none" stroke="#222222" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="466" y="986" font-size="12" font-weight="normal" text-anchor="start" fill="#444">− bus</text>
+<text x="80" y="1260" font-size="13" font-weight="normal" text-anchor="start" fill="#555">A/B swapped = no replies (not damage): swap them and retry.</text>
+<text x="80" y="1278" font-size="13" font-weight="normal" text-anchor="start" fill="#555">Cable moves with the probe: leave a slack loop, anchor both ends.</text>
+<rect x="50" y="560" width="360" height="170" rx="8" fill="#f7f7f7" stroke="#9aa0a6" stroke-width="2" stroke-dasharray="10,6"/>
+<text x="230" y="592" font-size="16" font-weight="bold" text-anchor="middle" fill="#777">Solar (next semester)</text>
+<text x="230" y="618" font-size="13" font-weight="normal" text-anchor="middle" fill="#777">30 W panel → Renogy Wanderer 10 A</text>
+<text x="230" y="638" font-size="13" font-weight="normal" text-anchor="middle" fill="#777">PV in; BATTERY out → battery terminals</text>
+<text x="230" y="658" font-size="13" font-weight="normal" text-anchor="middle" fill="#777">through its own fuse. Set battery type</text>
+<text x="230" y="678" font-size="13" font-weight="normal" text-anchor="middle" fill="#777">to LI (lithium).</text>
+<text x="230" y="708" font-size="12" font-weight="normal" text-anchor="middle" fill="#999" font-style="italic">Spare INA219 here measures charging.</text>
+<rect x="50" y="1500" width="520" height="245" rx="8" fill="#ffffff" stroke="#1f2328" stroke-width="2"/>
+<text x="70" y="1530" font-size="18" font-weight="bold" text-anchor="start" fill="#1f2328">Wire key</text>
+<path d="M72,1554 L142,1554" fill="none" stroke="#d62828" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="158" y="1559" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">14 AWG battery + / motor power</text>
+<path d="M72,1574 L142,1574" fill="none" stroke="#222222" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="158" y="1579" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">14 AWG ground</text>
+<path d="M72,1594 L142,1594" fill="none" stroke="#1f6fd1" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="158" y="1599" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">18 AWG motor / actuator leads</text>
+<path d="M72,1614 L142,1614" fill="none" stroke="#8e44ad" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="158" y="1619" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">18 AWG E-stop loop</text>
+<path d="M72,1634 L142,1634" fill="none" stroke="#e08a00" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="158" y="1639" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">22 AWG RC signals (3.3 V)</text>
+<path d="M72,1654 L142,1654" fill="none" stroke="#2a9d8f" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="158" y="1659" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">I2C to the MPU-6050</text>
+<path d="M72,1674 L142,1674" fill="none" stroke="#9aa0a6" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="8,6"/>
+<text x="158" y="1679" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">planned, dashed</text>
+<rect x="600" y="1500" width="1760" height="245" rx="8" fill="#ffffff" stroke="#1f2328" stroke-width="2"/>
+<text x="620" y="1530" font-size="18" font-weight="bold" text-anchor="start" fill="#1f2328">Build and power-up notes</text>
+<text x="620" y="1558" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">1. Each ground symbol is its own wire to the fuse block's − bus; only the − bus wire goes to the battery −. Ring terminals on studs, ferrules in screw terminals.</text>
+<text x="620" y="1579" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">2. E-stop: pressing it opens the relay coil loop, so the MDDRC10 and the DRV8871 lose power. The Pi, radio and sensor stay on (F3, F4) to report the stop.</text>
+<text x="620" y="1600" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">3. Relay harnesses often have a coil diode: 86 = +, 85 = ground. Check the listing's diagram.</text>
+<text x="620" y="1621" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">4. First power-up: wheels off the ground, E-stop pressed, start rover.py (it sends 'stop' pulses), then switch on. The MDDRC10 learns 'stop' at power-up.</text>
+<text x="620" y="1642" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">5. MIX mode for the demo (the code mixes throttle and steering). The FDR's rev A drawing used INDEPENDENT mode with the Arduino; this one replaces it.</text>
+<text x="620" y="1663" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">6. Check with i2cdetect -y 1: 3c (OLED) and 68 (MPU-6050). Turn on I2C in raspi-config.</text>
+<text x="620" y="1684" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">7. Battery: charge LiFePO4 at 14.4 V; unplug the XT60 to charge on the bench.</text>
+<text x="620" y="1705" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">8. DRV8871 VM is a second lug on the MDDRC10's VB+ (after the relay) through a 5 A inline fuse. Solder its terminal blocks. If probe-down pulls up, set ACT_EXTEND_SIGN = -1.</text>
+<text x="620" y="1726" font-size="14" font-weight="normal" text-anchor="start" fill="#1f2328">9. Each side's two drive motors are in parallel; if a side runs backward, swap its two leads at the MDDRC10. Lines that cross without a dot are not connected.</text>
+<text x="50" y="1784" font-size="13" font-weight="normal" text-anchor="start" fill="#777" font-style="italic">D.I.R.T.T. rover wiring, demo configuration. Generated by code/Demo/wiring/make_rover_wiring.py. Fuse and wire sizes from the FDR drivetrain wiring (rev A).</text>
+</svg>
