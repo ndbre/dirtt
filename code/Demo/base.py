@@ -279,9 +279,9 @@ DRIVE_KEYS = {
 }
 
 HELP = [
-    "DRIVE mode: hold w/a/s/d or arrows (q/e arcs), let go = stop     +/- speed",
-    "PROBE mode: p = probe at a grid square   j/u = probe down/up 1 s   R = probe all the way up",
-    "m = switch DRIVE/PROBE (swap the motor/actuator plug first)   SPACE or x = STOP   Esc = quit",
+    "Drive: hold w/a/s/d or arrows (q/e arcs), let go = stop     +/- speed",
+    "Probe: p = probe at a grid square   j/u = probe down/up 1 s   R = probe all the way up",
+    "SPACE or x = STOP   Esc = quit   m = DRIVE/PROBE (only if the actuator is on the MDDRC10)",
 ]
 
 

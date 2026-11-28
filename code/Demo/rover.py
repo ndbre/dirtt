@@ -6,9 +6,10 @@ Built on the team's rover.py (radio link, soil sensor, CSV upload), plus remote 
     - LoRa link to the base: heartbeat, status, soil results sent with ACK and resent until received
     - driving: the base sends throttle/steering over LoRa; the rover sends R/C pulses to the
       Cytron MDDRC10 from GPIO18/19 (driver switch on MIX); stops if commands stop for 1 s
-    - probe: in PROBE mode the linear actuator is plugged into the MDDRC10 instead of the drive
-      motors. One command from the base runs the whole cycle: probe down, read the soil, average,
-      probe up, save the result, send it to the base
+    - probe: the linear actuator runs on its own Adafruit DRV8871 driver (GPIO23/24). One command
+      from the base runs the whole cycle: probe down, read the soil, average, probe up, save the
+      result, send it to the base. (Fallback without the DRV8871: ACT_DRIVER = "mddrc10" and plug
+      the actuator into the MDDRC10 in place of the motors, PROBE mode.)
 
 Run on the rover (normally as a service; see README.md):
     python3 rover.py
@@ -53,8 +54,12 @@ RAMP_US_PER_STEP = 8         # per 20 ms: about 0.5 s from stop to full
 DRIVE_DEADMAN_S = 1.0        # stop if no DRIVE packet for this long
 MAX_DRIVE_PCT = 60           # speed cap while driving
 
-# ---- linear actuator, on the MDDRC10 in place of the motors (PROBE mode) ----
-ACT_PCT = 100                # actuator speed, %
+# ---- linear actuator ----
+ACT_DRIVER = "drv8871"       # "drv8871": its own driver, probe from any mode, no plug swapping
+                             # "mddrc10": fallback, actuator plugged into the MDDRC10 (PROBE mode)
+ACT_IN1_PIN = 23             # DRV8871 IN1 (BCM). IN1 high, IN2 low = OUT1 positive
+ACT_IN2_PIN = 24             # DRV8871 IN2
+ACT_PCT = 100                # actuator speed on the MDDRC10, % (the DRV8871 always runs full speed)
 ACT_EXTEND_SIGN = +1         # if "probe down" pulls the probe UP, change this to -1
 EXTEND_S = 15.0              # run time down. Its own limit switch stops it at the end of travel,
 RETRACT_S = 18.0             #   so a bit too long is fine. Time a full stroke and set these.
@@ -98,6 +103,14 @@ class FakePi:
 
     def __init__(self):
         self.pulses = {}
+
+    def set_mode(self, pin, mode):
+        pass
+
+    def write(self, pin, level):
+        if self.pulses.get(pin) != level:
+            self.pulses[pin] = level
+            log(f"  [sim] GPIO{pin} = {level}")
 
     def set_servo_pulsewidth(self, pin, us):
         before = self.pulses.get(pin, 0) not in (0, NEUTRAL_US)
@@ -173,6 +186,54 @@ class Mddrc10:
         time.sleep(0.2)
         self.pi.set_servo_pulsewidth(RC1_PIN, 0)
         self.pi.set_servo_pulsewidth(RC2_PIN, 0)
+
+
+class Drv8871:
+    """Linear actuator on an Adafruit DRV8871 (IN1/IN2 straight from the Pi, full speed).
+
+    IN1 IN2: 1 0 = one way, 0 1 = the other, 1 1 = brake, 0 0 = coast (driver sleeps).
+    Both inputs have pull-downs on the chip and on the Pi, so the actuator is off at boot.
+    The board's 30k RLIM caps the current at about 2 A; that does NOT stop the probe on a rock
+    (the rover lifts long before the current rises), the tilt guard does that.
+    """
+    REVERSE_PAUSE_S = 0.15       # brake this long before changing direction
+
+    def __init__(self, pi):
+        self.pi = pi
+        self.lock = threading.Lock()
+        self.direction = 0
+        for pin in (ACT_IN1_PIN, ACT_IN2_PIN):
+            pi.set_mode(pin, 1)                 # pigpio.OUTPUT
+        self._set(0, 0)
+
+    def _set(self, in1, in2):
+        self.pi.write(ACT_IN1_PIN, in1)
+        self.pi.write(ACT_IN2_PIN, in2)
+
+    def actuator(self, direction):
+        """+1 = probe down, -1 = probe up, 0 = stop (brake)."""
+        d = (direction > 0) - (direction < 0)
+        with self.lock:
+            if d and self.direction and d != self.direction:
+                self._set(1, 1)
+                time.sleep(self.REVERSE_PAUSE_S)
+            if d == 0:
+                self._set(1, 1)
+            elif d * ACT_EXTEND_SIGN > 0:
+                self._set(1, 0)
+            else:
+                self._set(0, 1)
+            self.direction = d
+
+    def stop_now(self):
+        self.actuator(0)
+
+    def shutdown(self):
+        with self.lock:
+            self._set(1, 1)
+            time.sleep(0.1)
+            self._set(0, 0)                     # coast: the driver goes to sleep
+            self.direction = 0
 
 
 # =================================================================================================
@@ -334,8 +395,10 @@ def tilt_test(imu):
 # ROVER
 # =================================================================================================
 class Rover:
-    def __init__(self, radio, display, motors, sensor, imu=None):
+    def __init__(self, radio, display, motors, sensor, imu=None, act=None):
         self.radio, self.display, self.motors, self.sensor = radio, display, motors, sensor
+        self.act = act or motors                 # no DRV8871: the actuator is on the MDDRC10
+        self.act_shares_driver = self.act is motors
         self.imu = imu
         self.mode = L.MODE_DRIVE
         self.state = L.STATE_IDLE
@@ -424,15 +487,15 @@ class Rover:
             if outcome == "stopped":
                 return
             if outcome in ("blocked", "imu"):
-                self.motors.actuator(0)
+                self.act.actuator(0)
                 self._set_event(L.EV_PROBE_BLOCKED if outcome == "blocked" else L.EV_NO_TILT, probe_id)
                 self.phase = L.PHASE_RETRACTING
-                self.motors.actuator(-1)
+                self.act.actuator(-1)
                 self._run_for(RETRACT_S)
-                self.motors.actuator(0)
+                self.act.actuator(0)
                 log(f"probe {probe_id}: raised again, nothing saved")
                 return
-            self.motors.actuator(0)
+            self.act.actuator(0)
             self.phase = L.PHASE_READING
             if not self._run_for(SETTLE_S):
                 return
@@ -447,10 +510,10 @@ class Rover:
                     return
             log(f"probe {probe_id}: coming up ({len(readings)}/{n} good readings)")
             self.phase = L.PHASE_RETRACTING
-            self.motors.actuator(-1)
+            self.act.actuator(-1)
             if not self._run_for(RETRACT_S):
                 return
-            self.motors.actuator(0)
+            self.act.actuator(0)
 
             last = readings[-AVG_LAST:]
             if len(last) < MIN_GOOD:
@@ -466,14 +529,14 @@ class Rover:
             log(f"probe {probe_id} saved: pH {avg['ph']:.2f}  moisture {avg['moisture_pct']:.1f}%  "
                 f"EC {avg['ec_uScm']:.0f}  temp {avg['temp_c']:.1f} C")
         finally:
-            self.motors.actuator(0)
+            self.act.actuator(0)
             self.phase = L.PHASE_NONE
             self.state = L.STATE_IDLE
 
     def _extend_with_tilt_guard(self, probe_id, x):
         """Probe down for EXTEND_S, watching the tilt. Returns ok / blocked / imu / stopped."""
         if self.imu is None:
-            self.motors.actuator(+1)
+            self.act.actuator(+1)
             return "ok" if self._run_for(EXTEND_S) else "stopped"
         if hasattr(self.imu, "sim_begin"):
             self.imu.sim_begin(blocked=(x == 9))      # --sim: grid x = 9 plays "hit a rock"
@@ -481,7 +544,7 @@ class Rover:
             level = average_g(self.imu, TILT_BASELINE_S, self.abort)
             if level is None:
                 return "stopped"
-            self.motors.actuator(+1)
+            self.act.actuator(+1)
             window = collections.deque(maxlen=5)          # ~0.1 s of readings
             end = time.monotonic() + EXTEND_S
             over_since, peak = None, 0.0
@@ -508,10 +571,10 @@ class Rover:
     def _jog_job(self, direction, seconds):
         self.state = L.STATE_JOGGING
         try:
-            self.motors.actuator(direction)
+            self.act.actuator(direction)
             self._run_for(seconds)
         finally:
-            self.motors.actuator(0)
+            self.act.actuator(0)
             self.state = L.STATE_IDLE
 
     def _start(self, target, *args):
@@ -523,6 +586,12 @@ class Rover:
     def stop_all(self):
         self.abort.set()
         self.motors.stop_now()
+        if not self.act_shares_driver:
+            self.act.stop_now()
+
+    def probe_mode_ok(self):
+        """On the MDDRC10 the actuator needs PROBE mode (plugs swapped); on the DRV8871 any mode."""
+        return self.mode == L.MODE_PROBE or not self.act_shares_driver
 
     def handle_cmd(self, p):
         if len(p) < 3:
@@ -542,7 +611,7 @@ class Rover:
             log(f"mode: {L.MODE_NAMES[self.mode]}")
         elif cmd == L.CMD_PROBE and len(args) >= 6:
             probe_id, x, y = struct.unpack("<Hhh", args[:6])
-            if self.mode != L.MODE_PROBE:
+            if not self.probe_mode_ok():
                 self._set_event(L.EV_WRONG_MODE, probe_id)
             elif self.busy():
                 self._set_event(L.EV_BUSY, probe_id)
@@ -550,15 +619,17 @@ class Rover:
                 self._set_event(L.EV_NO_TILT, probe_id)
                 log("probe refused: no tilt sensor (TILT_REQUIRED)")
             else:
+                self.motors.stop_now()               # never probe while rolling
                 self._set_event(L.EV_PROBE_STARTED, probe_id)
                 self._start(self._probe_job, probe_id, x, y)
         elif cmd == L.CMD_ACT and len(args) >= 2:
             direction, tenths = struct.unpack("<bB", args[:2])
-            if self.mode != L.MODE_PROBE:
+            if not self.probe_mode_ok():
                 self._set_event(L.EV_WRONG_MODE)
             elif self.busy():
                 self._set_event(L.EV_BUSY)
             else:
+                self.motors.stop_now()
                 self._set_event(L.EV_JOG)
                 self._start(self._jog_job, 1 if direction > 0 else -1, tenths / 10.0)
 
@@ -656,21 +727,25 @@ def main():
         if not pi.connected:
             sys.exit("Can't reach the pigpio daemon: sudo systemctl enable --now pigpiod")
     motors = Mddrc10(pi)        # sends 1500 us right away, so the MDDRC10 captures "stop"
+    act = Drv8871(pi) if ACT_DRIVER == "drv8871" else None
 
     try:
         radio, display = L.make_radio(L.ROVER_NODE, sim=args.sim, sim_loss=args.sim_loss)
     except Exception as e:
         motors.shutdown()
+        if act:
+            act.shutdown()
         sys.exit(f"Could not start the radio: {e}\nCheck SPI is on and the Bonnet is seated.")
 
-    rover = Rover(radio, display, motors, SoilSensor(sim=args.sim), imu)
+    rover = Rover(radio, display, motors, SoilSensor(sim=args.sim), imu, act)
 
     def bail(signum, frame):
         rover.stop_event.set()
     signal.signal(signal.SIGTERM, bail)
     signal.signal(signal.SIGHUP, bail)
 
-    log(f"sending STOP (1500 us) on GPIO{RC1_PIN}/{RC2_PIN}; mode {L.MODE_NAMES[rover.mode]}")
+    log(f"sending STOP (1500 us) on GPIO{RC1_PIN}/{RC2_PIN}; mode {L.MODE_NAMES[rover.mode]}; "
+        f"actuator on {'DRV8871 GPIO%d/%d' % (ACT_IN1_PIN, ACT_IN2_PIN) if act else 'the MDDRC10'}")
     try:
         rover.run()
     except KeyboardInterrupt:
@@ -678,6 +753,8 @@ def main():
     finally:
         rover.stop_all()
         motors.shutdown()
+        if act:
+            act.shutdown()
         rover.sensor.close()
         pi.stop()
         L.show(display, FONT, "STOPPED")

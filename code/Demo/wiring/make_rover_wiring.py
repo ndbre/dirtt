@@ -8,7 +8,7 @@ Dashed = planned, not needed for the demo.
 """
 import os
 
-W, H = 2400, 1700
+W, H = 2400, 1800
 RED, BLK, MOT, SIG, I2C, EST, USB, RS4, GRY = ("#d62828", "#222222", "#1f6fd1", "#e08a00", "#2a9d8f",
                                               "#8e44ad", "#555555", "#c0392b", "#9aa0a6")
 FONT = "Segoe UI, Roboto, Helvetica, Arial, sans-serif"
@@ -55,13 +55,15 @@ def term(x, y, label="", side="right", color="#1f2328", size=14):
             text(x, y + 24, label, size, "bold", "middle")
 
 
-def gnd(x, y, label="to − bus", awg="", left=False):
+def gnd(x, y, label="to − bus", awg="", left=False, below=False):
     """Ground symbol: its own wire back to the fuse block's − bus."""
     wire([(x, y), (x, y + 14)], BLK, 3)
     for i, w in enumerate((22, 14, 6)):
         wire([(x - w / 2, y + 14 + i * 6), (x + w / 2, y + 14 + i * 6)], BLK, 2.5)
     t = label + (f", {awg}" if awg else "")
-    if left:
+    if below:
+        text(x, y + 48, t, 12, "normal", "middle", "#444")
+    elif left:
         text(x - 16, y + 26, t, 12, "normal", "end", "#444")
     else:
         text(x + 16, y + 26, t, 12, "normal", "start", "#444")
@@ -170,8 +172,8 @@ for lbl, y in (("VB+", VBP), ("VB−", VBN)):
     text(MX + 16, y + 5, lbl, 15, "bold", "start", "#ffffff")
 wire([(RX + 237, FY[1]), (1580, FY[1]), (1580, VBP), (MX - 8, VBP)], RED, 6)
 tag(1560, FY[1] - 10, "14 AWG", RED)
-wire([(MX - 8, VBN), (1590, VBN), (1590, VBN + 70)], BLK, 6)
-gnd(1590, VBN + 70, "− bus", left=True)
+wire([(MX - 8, VBN), (1612, VBN), (1612, VBN + 60)], BLK, 6)
+gnd(1612, VBN + 60, "− bus", below=True)
 OUTS = {"MLA": MY + 270, "MLB": MY + 315, "MRA": MY + 410, "MRB": MY + 455}
 for lbl, y in OUTS.items():
     add(f'<circle cx="{MX + MW}" cy="{y}" r="8" fill="#9be59b" stroke="#2c6b2c" stroke-width="2"/>')
@@ -217,23 +219,8 @@ for (a, b, ka, kb, xp, xn) in (("MLA", "MLB", "LF", "LR", 2070, 2100), ("MRA", "
         wire([(xn, ny), (nx, ny)], MOT, 3.5)
         text(nx - 8, ny + 16, "−", 13, "bold", "end")
 tag(2240, 745, "18 AWG", MOT)
-text(2060, 765, "Each side's two motors in parallel. A side", 13, "normal", "start", "#555")
-text(2060, 783, "runs backward: swap its two leads at the", 13, "normal", "start", "#555")
-text(2060, 801, "MDDRC10. Lines crossing without a dot", 13, "normal", "start", "#555")
-text(2060, 819, "are not connected.", 13, "normal", "start", "#555")
 
-# actuator (PROBE mode)
-AX, AY = 2060, 845
-box(AX, AY, 290, 120, "#fff8e6", "#b07a00", 2.5, 8, "10,6")
-text(AX + 145, AY + 30, "Linear actuator, 8 in, 12 V", 15, "bold", "middle")
-text(AX + 145, AY + 54, "PROBE mode: unplug the LEFT motor", 13, "normal", "middle", "#555")
-text(AX + 145, AY + 72, "pair from MLA/MLB, plug this in", 13, "normal", "middle", "#555")
-text(AX + 145, AY + 90, "instead. 12 V OFF while swapping.", 13, "normal", "middle", "#555")
-text(AX + 145, AY + 110, "Its own limit switches stop it at each end.", 12, "normal", "middle", "#777", True)
-wire([(MX + MW + 8, OUTS["MLA"] + 12), (2035, OUTS["MLA"] + 12), (2035, AY + 40), (AX, AY + 40)],
-     "#b07a00", 3, "10,6")
-wire([(MX + MW + 8, OUTS["MLB"] + 12), (2015, OUTS["MLB"] + 12), (2015, AY + 80), (AX, AY + 80)],
-     "#b07a00", 3, "10,6")
+# actuator on its own DRV8871 (drawn after the Pi, which sets the signal rows)
 
 # ============================================================================== 5 V + PI
 BX, BY = 1250, 600
@@ -251,7 +238,7 @@ tag(BX - 60, BY + 45, "18 AWG", RED)
 wire([(BX - 7, BY + 90), (1215, BY + 90), (1215, BY + 112)], BLK, 3.5)
 gnd(1215, BY + 112, "− bus")
 
-PX, PY, PW, PH = 1080, 960, 420, 470
+PX, PY, PW, PH = 1080, 960, 420, 490
 box(PX, PY, PW, PH, "#e8f1e4", "#2e7d32", 2.5, 14)
 text(PX + 30, PY + 44, "Rover Pi 3 B", 22, "bold")
 text(PX + 30, PY + 70, "+ Adafruit RFM95W LoRa Bonnet (915 MHz)", 14, "normal", "start", "#555")
@@ -263,21 +250,22 @@ text(PX + 30, PY + 163, "(the Pi header is covered).", 13, "normal", "start", "#
 wire([(PX + 60, PY), (PX + 60, PY - 50)], "#444", 3)
 wire([(PX + 45, PY - 50), (PX + 75, PY - 50)], "#444", 3)
 text(PX + 85, PY - 40, "antenna", 13, "normal", "start", "#555")
-PINS = ["5V", "GND", "GPIO18", "GPIO19", "GND", "3V3", "GND", "SDA", "SCL", "GPIO27", "GPIO16", "GPIO20"]
+PINS = ["5V", "GND", "GPIO18", "GPIO19", "GND", "GPIO23", "GPIO24", "GND", "3V3", "GND", "SDA", "SCL",
+        "GPIO27", "GPIO16", "GPIO20"]
 PIN_Y = {}
 for i, p in enumerate(PINS):
-    y = PY + 40 + i * 35
+    y = PY + 40 + i * 30
     PIN_Y[(p, i)] = y
     later = p in ("GPIO27", "GPIO16", "GPIO20")
     add(f'<rect x="{PX + PW - 7}" y="{y - 7}" width="14" height="14" fill="{"#eeeeee" if later else "#f2c94c"}" '
         f'stroke="{"#aaa" if later else "#7a5d00"}"/>')
     text(PX + PW - 16, y + 5, p, 14, "bold", "end", GRY if later else "#1f2328")
 py = {k[0] + str(k[1]): v for k, v in PIN_Y.items()}
-P5, PG1, P18, P19, PG2, P33, PG3, PSDA, PSCL, P27, P16, P20 = (PIN_Y[(p, i)] for i, p in enumerate(PINS))
+P5, PG1, P18, P19, PG2, P23, P24, PG4, P33, PG3, PSDA, PSCL, P27, P16, P20 = (PIN_Y[(p, i)] for i, p in enumerate(PINS))
 # 5 V in (to the Bonnet's 5V and GND holes)
 wire([(BX + 257, BY + 30), (1540, BY + 30), (1540, P5), (PX + PW + 7, P5)], RED, 3.5)
 wire([(BX + 257, BY + 90), (1525, BY + 90), (1525, PG1), (PX + PW + 7, PG1)], BLK, 3.5)
-tag(1548, (BY + 30 + P5) / 2, "20 AWG, short", RED, "start")
+tag(1515, 830, "20 AWG, short", RED, "end")
 text(PX + 30, PY + 200, "5 V in through the 5V/GND holes", 13, "normal", "start", "#555")
 text(PX + 30, PY + 218, "skips the Pi's input fuse: check", 13, "normal", "start", "#555")
 text(PX + 30, PY + 236, "the converter reads 5.1 V first.", 13, "normal", "start", "#555")
@@ -292,34 +280,77 @@ text(1660, P19 - 8, "steering", 13, "normal", "start", SIG)
 text(1700, PG2 - 8, "common ground: required", 13, "bold", "start", RED)
 
 # MPU-6050
-IX, IY = 1990, 1160
-box(IX, IY, 250, 150, "#e6f6f4", I2C, 2.5)
+IX, IY = 1990, P33 - 92
+box(IX, IY, 250, 200, "#e6f6f4", I2C, 2.5)
 text(IX + 125, IY + 30, "MPU-6050 (GY-521)", 16, "bold", "middle")
 text(IX + 125, IY + 52, "tilt guard, I2C 0x68", 13, "normal", "middle", "#555")
 text(IX + 125, IY + 72, "screw flat + tight to chassis", 13, "normal", "middle", "#555")
 for j, lbl in enumerate(("VCC", "GND", "SDA", "SCL")):
     term(IX, IY + 95 + j * 0 + 0, "", "right") if False else None
-IP = {"VCC": IY + 92, "GND": IY + 108, "SDA": IY + 124, "SCL": IY + 140}
+IP = {"VCC": P33, "GND": PG3, "SDA": PSDA, "SCL": PSCL}
 for lbl, y in IP.items():
     add(f'<rect x="{IX - 6}" y="{y - 6}" width="12" height="12" fill="#f2c94c" stroke="#7a5d00"/>')
     text(IX + 12, y + 5, lbl, 12, "bold")
-wire([(PX + PW + 7, P33), (1590, P33), (1590, IP["VCC"]), (IX - 6, IP["VCC"])], RED, 2.5)
-wire([(PX + PW + 7, PG3), (1575, PG3), (1575, IP["GND"]), (IX - 6, IP["GND"])], BLK, 2.5)
-wire([(PX + PW + 7, PSDA), (1560, PSDA), (1560, IP["SDA"]), (IX - 6, IP["SDA"])], I2C, 2.5)
-wire([(PX + PW + 7, PSCL), (1545, PSCL), (1545, IP["SCL"]), (IX - 6, IP["SCL"])], I2C, 2.5)
+for pin_y, c in ((P33, RED), (PG3, BLK), (PSDA, I2C), (PSCL, I2C)):
+    wire([(PX + PW + 7, pin_y), (IX - 6, pin_y)], c, 2.5)
 tag(1700, IP["VCC"] - 8, "3.3 V", RED)
 
 # planned: HX711 + load cell, E-stop sense
-HX, HY = 1990, 1330
-box(HX, HY, 250, 120, "#f7f7f7", GRY, 2, 8, "10,6")
+HX, HY = 1990, IY + 215
+box(HX, HY, 250, 100, "#f7f7f7", GRY, 2, 8, "10,6")
 text(HX + 125, HY + 28, "HX711 + load cell (planned)", 15, "bold", "middle", "#777")
 text(HX + 125, HY + 50, "DT → GPIO16, SCK → GPIO20", 13, "normal", "middle", "#777")
-text(HX + 125, HY + 68, "VCC → 3V3, GND → GND", 13, "normal", "middle", "#777")
-text(HX + 125, HY + 90, "cell: E+ E− A+ A− on the HX711", 13, "normal", "middle", "#777")
+text(HX + 125, HY + 68, "VCC → 3V3, GND → GND;", 13, "normal", "middle", "#777")
+text(HX + 125, HY + 86, "cell on E+ E− A+ A−", 13, "normal", "middle", "#777")
 wire([(PX + PW + 7, P16), (1610, P16), (1610, HY + 45), (HX, HY + 45)], GRY, 2.5, "8,6")
 wire([(PX + PW + 7, P20), (1625, P20), (1625, HY + 65), (HX, HY + 65)], GRY, 2.5, "8,6")
 wire([(PX + PW + 7, P27), (1640, P27), (1640, P27)], GRY, 2.5, "8,6")
 text(1650, P27 + 5, "← E-stop NO contact (later)", 13, "normal", "start", GRY)
+
+# ============================================================================== DRV8871 + ACTUATOR
+DX, DY, DW, DH = 1960, 850, 200, 270
+box(DX, DY, DW, DH, "#fff4e0", "#b05f00", 2.5)
+DVM, DGND = (DX + 50, DY), (DX + 140, DY)
+term(*DVM, "VM", "below", RED, 13)
+term(*DGND, "GND", "below", BLK, 13)
+text(DX + DW / 2, DY + 62, "Adafruit DRV8871", 16, "bold", "middle")
+text(DX + DW / 2, DY + 82, "actuator driver", 13, "normal", "middle", "#555")
+text(DX + DW / 2, DY + 100, "6.5–45 V, ≈2 A limit", 12, "normal", "middle", "#777")
+text(DX + DW / 2, DY + 116, "(30k RLIM on the board)", 12, "normal", "middle", "#777")
+DO1, DO2 = DY + 150, DY + 185
+term(DX + DW, DO1, "OUT1", "left", MOT, 13)
+term(DX + DW, DO2, "OUT2", "left", MOT, 13)
+DIN = {"IN1": DY + 205, "IN2": DY + 230, "GND ": DY + 255}
+for lbl, y in DIN.items():
+    add(f'<rect x="{DX - 6}" y="{y - 6}" width="12" height="12" fill="#f2c94c" stroke="#7a5d00"/>')
+    text(DX + 12, y + 5, lbl.strip(), 12, "bold")
+# signals: Pi rows -> stepped verticals -> header (no crossings)
+for (pin_y, lbl, xv, c) in ((P23, "IN1", 1915, SIG), (P24, "IN2", 1930, SIG), (PG4, "GND ", 1945, BLK)):
+    wire([(PX + PW + 7, pin_y), (xv, pin_y), (xv, DIN[lbl]), (DX - 6, DIN[lbl])], c, 3)
+text(1660, P23 - 8, "actuator IN1", 13, "normal", "start", SIG)
+text(1660, P24 - 8, "actuator IN2", 13, "normal", "start", SIG)
+text(1660, PG4 - 8, "common ground", 13, "normal", "start", "#444")
+# power: tapped from the MDDRC10's VB+ (after the relay) through a 5 A inline fuse
+node(1580, VBP, RED, 7)
+PWY = 812
+wire([(1580, VBP), (1580, PWY), (DVM[0], PWY), (DVM[0], DY - 7)], RED, 3.5)
+box(1905, PWY - 13, 62, 26, "#fff7d6", "#1f2328", 2, 4)
+text(1936, PWY + 5, "5 A", 13, "bold", "middle")
+tag(1936, PWY - 22, "inline fuse", "#1f2328")
+tag(1590, 745, "18 AWG", RED, "start")
+wire([(DGND[0], DY - 7), (DGND[0], 790), (DGND[0] + 40, 790), (DGND[0] + 40, 800)], BLK, 3)
+gnd(DGND[0] + 40, 800, "− bus")
+# actuator
+AX, AY = 2200, 960
+box(AX, AY, 155, 150, "#fff8e6", "#b07a00", 2.5)
+text(AX + 78, AY + 28, "Linear actuator", 15, "bold", "middle")
+text(AX + 78, AY + 48, "ECO-WORTHY", 13, "normal", "middle", "#555")
+text(AX + 78, AY + 66, "8 in stroke, 12 V", 13, "normal", "middle", "#555")
+text(AX + 78, AY + 96, "Its own limit", 12, "normal", "middle", "#777", True)
+text(AX + 78, AY + 112, "switches stop it", 12, "normal", "middle", "#777", True)
+text(AX + 78, AY + 128, "at each end.", 12, "normal", "middle", "#777", True)
+wire([(DX + DW + 7, DO1), (AX, DO1)], MOT, 3.5)
+wire([(DX + DW + 7, DO2), (AX, DO2)], MOT, 3.5)
 
 # ============================================================================== SOIL SENSOR
 UX, UY = 560, 1040
@@ -364,8 +395,8 @@ text(230, 678, "to LI (lithium).", 13, "normal", "middle", "#777")
 text(230, 708, "Spare INA219 here measures charging.", 12, "normal", "middle", "#999", True)
 
 # ============================================================================== KEY + NOTES
-KY = 1500
-box(50, KY - 30, 520, 190)
+KY = 1530
+box(50, KY - 30, 520, 245)
 text(70, KY, "Wire key", 18, "bold")
 keys = [(RED, 7, "14 AWG battery + / motor power"), (BLK, 7, "14 AWG ground"), (MOT, 3.5, "18 AWG motor / actuator leads"),
         (EST, 3.5, "18 AWG E-stop loop"), (SIG, 3, "22 AWG RC signals (3.3 V)"), (I2C, 2.5, "I2C to the MPU-6050"),
@@ -374,16 +405,18 @@ for i, (c, wdt, lbl) in enumerate(keys):
     y = KY + 24 + i * 20
     wire([(72, y), (142, y)], c, wdt, "8,6" if c == GRY else None)
     text(158, y + 5, lbl, 14)
-box(600, KY - 30, 1760, 190)
+box(600, KY - 30, 1760, 245)
 text(620, KY, "Build and power-up notes", 18, "bold")
 notes = [
     "1. Each ground symbol is its own wire to the fuse block's − bus; only the − bus wire goes to the battery −. Ring terminals on studs, ferrules in screw terminals.",
-    "2. E-stop: pressing it opens the relay coil loop, so the MDDRC10 loses motor power. The Pi, radio and sensor stay on (F3, F4) to report the stop.",
+    "2. E-stop: pressing it opens the relay coil loop, so the MDDRC10 and the DRV8871 lose power. The Pi, radio and sensor stay on (F3, F4) to report the stop.",
     "3. Relay harnesses often have a coil diode: 86 = +, 85 = ground. Check the listing's diagram.",
     "4. First power-up: wheels off the ground, E-stop pressed, start rover.py (it sends 'stop' pulses), then switch on. The MDDRC10 learns 'stop' at power-up.",
     "5. MIX mode for the demo (the code mixes throttle and steering). The FDR's rev A drawing used INDEPENDENT mode with the Arduino; this one replaces it.",
     "6. Check with i2cdetect -y 1: 3c (OLED) and 68 (MPU-6050). Turn on I2C in raspi-config.",
     "7. Battery: charge LiFePO4 at 14.4 V; unplug the XT60 to charge on the bench.",
+    "8. DRV8871 VM is a second lug on the MDDRC10's VB+ (after the relay) through a 5 A inline fuse. Solder its terminal blocks. If probe-down pulls up, set ACT_EXTEND_SIGN = -1.",
+    "9. Each side's two drive motors are in parallel; if a side runs backward, swap its two leads at the MDDRC10. Lines that cross without a dot are not connected.",
 ]
 for i, n in enumerate(notes):
     text(620, KY + 28 + i * 21, n, 14)
